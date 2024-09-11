@@ -1,39 +1,23 @@
 # School of Computing &mdash; Year 4 Project Proposal Form
 
-> Edit (then commit and push) this document to complete your proposal form.
-> Make use of figures / diagrams where appropriate.
->
-> Do not rename this file.
-
 ## SECTION A
 
-|                     |                   |
-|---------------------|-------------------|
-|Project Title:       | xxxxxx            |
-|Student 1 Name:      | xxxxxx            |
-|Student 1 ID:        | xxxxxx            |
-|Student 2 Name:      | xxxxxx            |
-|Student 2 ID:        | xxxxxx            |
-|Project Supervisor:  | xxxxxx            |
+|                     |                              |
+|---------------------|------------------------------|
+|Project Title:       | Secure Chat                  |
+|Student 1 Name:      | Liucija Paulina Adomaviciute |
+|Student 1 ID:        | 21790411                     |
+|Student 2 Name:      | Eryk Zygmunt Styczynski      |
+|Student 2 ID:        | 21753851                     |
+|Project Supervisor:  | xxxxxx                       |
 
-> Ensure that the Supervisor formally agrees to supervise your project; this is only recognised once the
-> Supervisor assigns herself/himself via the project Dashboard.
->
-> Project proposals without an assigned
-> Supervisor will not be accepted for presentation to the Approval Panel.
 
 ## SECTION B
-
-> Guidance: This document is expected to be approximately 3 pages in length, but it can exceed this page limit.
-> It is also permissible to carry forward content from this proposal to your later documents (e.g. functional
-> specification) as appropriate.
->
-> Your proposal must include *at least* the following sections.
 
 
 ### Introduction
 
-> Describe the general area covered by the project.
+The primary objective of this project is to offer an open-source, non-profit secure messaging application. With this applicaiton, the users will be able to set up private encrypted chats over Local Area Network and exchanges messages, images and files.
 
 ### Outline
 
@@ -41,15 +25,21 @@
 
 ### Background
 
-> Where did the ideas come from?
+The inspiration for this project came from general interest in cybersecurity, cryptography, and privacy. With data leaks from the big companies become more common and public, data privacy concerns and the mistrust in the corporations  that offer the mainstream messaging applications, there is a need for a simple, lightweight, open-source messaging application.
 
 ### Achievements
 
-> What functions will the project provide? Who will the users be?
+**Target Audience**
+
+The target audience of this project is privacy and security conscious people.
+
+**Functionality of the Application**
+
+With this application, the user will be able to intiate private chats, send encrypted messages, images and files.
 
 ### Justification
 
-> Why/when/where/how will it be useful?
+This messaging application is not tied to any corporation and the data of the user is stored only on their local machine. The only data that is shared is the one that the user chooses to share. While there already exist some application that offer secure encrypted messaging and file sharing features, the data usually goes through a company controlled server, where it could be stolen, stored and sold or decrypted. By eliminating the server as middle-man, we are offering additional security for Local Area Network messaging and file sharing.
 
 ### Programming language(s)
 
@@ -61,11 +51,13 @@
 
 ### Hardware
 
-> Describe any non-standard hardware components which will be required.
+No special hardware/software requirements.
 
 ### Learning Challenges
 
-> List the main new things (technologies, languages, tools, etc) that you will have to learn.
+* Implementation of encryption and decryption algorithms.
+* Creating a user-friendly interface.
+* Configuring the application to send messages, images and files through Local Area Network.
 
 ### Breakdown of work
 
@@ -75,11 +67,11 @@
 > separate, clearly-defined tasks, and that those responsibilities substantially cover all of the work required
 > for the project.
 
-#### Student 1
+#### Liucija Paulina Adomaviciute
 
 > *Student 1 should complete this section.*
 
-#### Student 2
+#### Eryk Zygmunt Styczynski
 
 > *Student 2 should complete this section.*
 
