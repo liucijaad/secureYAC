@@ -21,7 +21,7 @@ The primary objective of this project is to offer an open-source, non-profit sec
 
 ### Outline
 
-> Outline the proposed project.
+Our proposed project aims to develop a secure messaging application that allows users to communicate privately by using peer-to-peer connections, with no external server involved. The application will feature encrypted messaging, image sharing, and file transfers, ensuring that all data exchanged remains confidential and is only accessible to the intended users.
 
 ### Background
 
@@ -43,11 +43,32 @@ This messaging application is not tied to any corporation and the data of the us
 
 ### Programming language(s)
 
-> List the proposed language(s) to be used.
+**Java:** Primary language for backend logic, message encryption and communication protocols.
+
+**JavaFX:** For building the frontend user interface of the application.
 
 ### Programming tools / Tech stack
 
-> Describe the compiler, database, web server, etc., and any other software tools you plan to use.
+**Frontend**:
+
+-   **JavaFX**: For creating the graphical user interface.
+
+**Backend**:
+
+-   **Java**: For handling the application logic, encryption, and message transfers.
+-   **Java Sockets**: For establishing peer-to-peer connections over LAN to send and receive messages and files.
+
+**Encryption**:
+
+-   **Java Cryptography Extension (JCE)**: For implementing encryption and decryption algorithms to secure the communication.
+
+**Version Control**:
+
+-   **Git and GitLab**: For version control and collaboration.
+
+**Testing**:
+
+-   **JUnit**: For unit testing of backend components.
 
 ### Hardware
 
@@ -74,14 +95,3 @@ No special hardware/software requirements.
 #### Eryk Zygmunt Styczynski
 
 > *Student 2 should complete this section.*
-
-## Example
-
-> Example: Here's how you can include images in markdown documents...
-
-<!-- Basically, just use HTML! -->
-
-<p align="center">
-  <img src="./res/cat.png" width="300px">
-</p>
-
