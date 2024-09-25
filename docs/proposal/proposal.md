@@ -17,15 +17,15 @@
 
 ### Introduction
 
-The primary objective of this project is to offer an open-source, non-profit secure messaging application. With this applicaiton, the users will be able to set up private encrypted chats over Local Area Network and exchanges messages, images and files.
+The primary objective of this project is to offer an open-source, non-profit secure messaging application. With this application, users will be able to set up private encrypted peer-to-peer connections for secure communication. As a minimum, the application will support LAN-based communication for testing purposes, but the focus will be on building a distributed P2P network for messaging, image sharing, and file transfers.
 
 ### Outline
 
-Our proposed project aims to develop a secure messaging application that allows users to communicate privately by using peer-to-peer connections, with no external server involved. The application will feature encrypted messaging, image sharing, and file transfers, ensuring that all data exchanged remains confidential and is only accessible to the intended users.
+Our proposed project aims to develop a secure messaging application that allows users to communicate privately via peer-to-peer connections, with no external server involved. This will offer a distributed architecture, allowing users to initiate private chats and exchange encrypted messages, images, and files. Our application will ensure confidentiality by encrypting and decrypting data on both ends.
 
 ### Background
 
-The inspiration for this project came from general interest in cybersecurity, cryptography, and privacy. With data leaks from the big companies become more common and public, data privacy concerns and the mistrust in the corporations  that offer the mainstream messaging applications, there is a need for a simple, lightweight, open-source messaging application.
+The inspiration for this project came from our general interest in cybersecurity, cryptography, and privacy. With huge data leaks becoming more common and public, increasing data privacy concerns and the mistrust in the corporations that offer the mainstream messaging applications, there is a need for a simple, lightweight, open-source messaging application. With this project we aim to address the need for enhanced privacy and security in communication.
 
 ### Achievements
 
@@ -39,7 +39,7 @@ With this application, the user will be able to intiate private chats, send encr
 
 ### Justification
 
-This messaging application is not tied to any corporation and the data of the user is stored only on their local machine. The only data that is shared is the one that the user chooses to share. While there already exist some application that offer secure encrypted messaging and file sharing features, the data usually goes through a company controlled server, where it could be stolen, stored and sold or decrypted. By eliminating the server as middle-man, we are offering additional security for Local Area Network messaging and file sharing.
+This messaging application is not tied to any corporation and the data of the user is stored only on their local machine. The only data that is shared is the one that the user chooses to share. While there already exist some applications that offer secure encrypted messaging and file sharing features, the data usually goes through a company controlled server, where it could be stolen, stored and sold or decrypted. By eliminating the server as middle-man, we are offering additional security for peer-to-peer messaging and file sharing.
 
 ### Programming language(s)
 
@@ -78,7 +78,8 @@ No special hardware/software requirements.
 
 * Implementation of encryption and decryption algorithms.
 * Creating a user-friendly interface.
-* Configuring the application to send messages, images and files through Local Area Network.
+* Designing and implementing a scalable P2P architecture.
+* Configuring the application to securely send messages, images and files through P2P network.
 
 ### Breakdown of work
 
