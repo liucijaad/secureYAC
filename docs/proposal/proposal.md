@@ -9,7 +9,7 @@
 |Student 1 ID:        | 21790411                     |
 |Student 2 Name:      | Eryk Zygmunt Styczynski      |
 |Student 2 ID:        | 21753851                     |
-|Project Supervisor:  | xxxxxx                       |
+|Project Supervisor:  | Geoffrey Hamilton            |
 
 
 ## SECTION B
@@ -83,15 +83,12 @@ No special hardware/software requirements.
 
 ### Breakdown of work
 
-> Clearly identify who will undertake which parts of the project.
->
-> It must be clear from the explanation of this breakdown of work both that each student is responsible for
-> separate, clearly-defined tasks, and that those responsibilities substantially cover all of the work required
-> for the project.
-
 #### Liucija Paulina Adomaviciute
 
-> *Student 1 should complete this section.*
+* Implementation of encryption and decryption algorithms
+* Implementation of compression algorithm
+* Testing
+* CI/CD pipelines
 
 #### Eryk Zygmunt Styczynski
 
