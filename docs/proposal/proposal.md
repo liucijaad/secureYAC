@@ -92,4 +92,5 @@ No special hardware/software requirements.
 
 #### Eryk Zygmunt Styczynski
 
-> *Student 2 should complete this section.*
+* UI development and integration
+* Peer-to-peer networking
