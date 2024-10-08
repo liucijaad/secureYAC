@@ -9,7 +9,7 @@
 |Student 1 ID:        | 21790411                     |
 |Student 2 Name:      | Eryk Zygmunt Styczynski      |
 |Student 2 ID:        | 21753851                     |
-|Project Supervisor:  | Geoffrey Hamilton            |
+|Project Supervisor:  | Geoff Hamilton            |
 
 
 ## SECTION B
