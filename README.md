@@ -1,7 +1,9 @@
 ﻿# School of Computing &mdash; Year 4 Project
 
 ## SecureYAC
----------------------------------------------
+
+|            |                              |
+|------------|------------------------------|
 |Supervisor: | Geoff Hamilton               |
 |Student:    | Eryk Zygmunt Styczynski      |
 |Student:    | Liucija Paulina Adomaviciute |
