@@ -1,8 +1,8 @@
-module ie.dcu.secureyac.ui {
+module ie.dcu.secureYAC {
     requires javafx.controls;
     requires javafx.fxml;
 
 
-    opens ie.dcu.secureyac.ui to javafx.fxml;
-    exports ie.dcu.secureyac.ui;
+    opens ie.dcu.secureYAC to javafx.fxml;
+    exports ie.dcu.secureYAC;
 }
