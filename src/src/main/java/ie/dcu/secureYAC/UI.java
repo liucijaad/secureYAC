@@ -37,10 +37,17 @@ public class UI extends Application {
         contactBoxes = new HashMap<>();
         lastMessageLabels = new HashMap<>();
 
+        // Add contact button
+        Button addContactButton = new Button("+");
+        addContactButton.setStyle("-fx-font-size: 18px; -fx-background-color: transparent;");
+        addContactButton.setMaxWidth(Double.MAX_VALUE);
+        addContactButton.setOnAction(e -> showAddContact());
+
         // Left sidebar with contacts list
         contactsList = new VBox(10);
         contactsList.setPadding(new Insets(10));
         contactsList.setStyle("-fx-background-color: #e0e0e0;");
+        contactsList.getChildren().add(addContactButton);
 
         contactsScroll = new ScrollPane(contactsList);
         contactsScroll.setFitToWidth(true);
@@ -213,6 +220,19 @@ public class UI extends Application {
             splitPane.setDividerPositions(0.3);
         }
         contactsVisible = !contactsVisible;
+    }
+
+    private void showAddContact() {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Add Contact");
+        dialog.setHeaderText("Add a new contact");
+        dialog.setContentText("Name:");
+
+        dialog.showAndWait().ifPresent(name -> {
+            if (!name.trim().isEmpty() && !messageHistory.containsKey(name)) {
+                addContact(name, "New contact", "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png");
+            }
+        });
     }
 
     public static void main(String[] args) {
