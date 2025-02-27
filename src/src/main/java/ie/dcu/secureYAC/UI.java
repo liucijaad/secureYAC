@@ -25,6 +25,9 @@ public class UI extends Application {
     private String currentChat;
     private ImageView topBarProfileImage;
     private Label topBarUsername;
+    private boolean contactsVisible = true;
+    private SplitPane splitPane;
+    private ScrollPane contactsScroll;
 
     @Override
     public void start(Stage primaryStage) {
@@ -39,7 +42,7 @@ public class UI extends Application {
         contactsList.setPadding(new Insets(10));
         contactsList.setStyle("-fx-background-color: #e0e0e0;");
 
-        ScrollPane contactsScroll = new ScrollPane(contactsList);
+        contactsScroll = new ScrollPane(contactsList);
         contactsScroll.setFitToWidth(true);
         contactsScroll.setFitToHeight(true);
 
@@ -56,13 +59,17 @@ public class UI extends Application {
         topBar.setPadding(new Insets(10));
         topBar.setAlignment(Pos.CENTER_LEFT);
 
+        Button menuButton = new Button("☰");
+        menuButton.setStyle("-fx-font-size: 18px; -fx-background-color: transparent;");
+        menuButton.setOnAction(e -> toggleContacts());
+
         topBarProfileImage = new ImageView(new Image("https://img.freepik.com/free-photo/lifestyle-people-emotions-casual-concept-confident-nice-smiling-asian-woman-cross-arms-chest-confident-ready-help-listening-coworkers-taking-part-conversation_1258-59335.jpg"));
         topBarProfileImage.setFitWidth(50);
         topBarProfileImage.setFitHeight(50);
         topBarUsername = new Label("Select a Contact");
         topBarUsername.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
 
-        topBar.getChildren().addAll(topBarProfileImage, topBarUsername);
+        topBar.getChildren().addAll(menuButton, topBarProfileImage, topBarUsername);
         chatArea.setTop(topBar);
 
         // Chat area
@@ -99,7 +106,7 @@ public class UI extends Application {
         chatArea.setBottom(inputArea);
 
         // Use SplitPane to divide screen into two resizable parts
-        SplitPane splitPane = new SplitPane();
+        splitPane = new SplitPane();
         splitPane.getItems().addAll(contactsScroll, chatArea);
         splitPane.setDividerPositions(0.3);
 
@@ -107,7 +114,7 @@ public class UI extends Application {
         root.setCenter(splitPane);
 
         Scene scene = new Scene(root, 800, 500);
-        primaryStage.setTitle("Messaging App");
+        primaryStage.setTitle("SecureYAC");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
@@ -196,6 +203,16 @@ public class UI extends Application {
         for (String[] message : messageHistory.get(name)) {
             addMessage(message[0], message[1], message[0].equals("You"));
         }
+    }
+
+    private void toggleContacts() {
+        if (contactsVisible) {
+            splitPane.getItems().remove(0);
+        } else {
+            splitPane.getItems().add(0, contactsList.getParent());
+            splitPane.setDividerPositions(0.3);
+        }
+        contactsVisible = !contactsVisible;
     }
 
     public static void main(String[] args) {
