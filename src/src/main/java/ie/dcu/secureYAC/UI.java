@@ -214,9 +214,9 @@ public class UI extends Application {
 
     private void toggleContacts() {
         if (contactsVisible) {
-            splitPane.getItems().remove(0);
+            splitPane.getItems().removeFirst();
         } else {
-            splitPane.getItems().add(0, contactsList.getParent());
+            splitPane.getItems().addFirst(contactsScroll);
             splitPane.setDividerPositions(0.3);
         }
         contactsVisible = !contactsVisible;
