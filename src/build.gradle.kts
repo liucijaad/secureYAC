@@ -10,9 +10,9 @@ repositories {
 }
 
 dependencies {
-    implementation("org.bouncycastle:bcprov-jdk16:1.45")
-    testImplementation(platform("org.junit:junit-bom:5.10.0"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
+    implementation("org.bouncycastle:bcprov-jdk18on:1.80")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 tasks.test {
