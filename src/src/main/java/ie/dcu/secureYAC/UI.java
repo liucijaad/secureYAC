@@ -12,6 +12,8 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -101,7 +103,12 @@ public class UI extends Application {
             if (currentChat != null) {
                 String message = messageField.getText().trim();
                 if (!message.isEmpty()) {
-                    messageHistory.get(currentChat).add(new String[]{"You", message});
+                    LocalDateTime now = LocalDateTime.now();
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy    HH:mm:ss");
+                    String timestamp = now.format(formatter);
+
+                    // Add the message to history with timestamp
+                    messageHistory.get(currentChat).add(new String[]{"You", message, timestamp});
                     updateChatBox(currentChat);
                     updateLastMessage(currentChat, message);
                     messageField.clear();
@@ -126,7 +133,7 @@ public class UI extends Application {
         primaryStage.show();
     }
 
-    private void addMessage(String sender, String text, boolean isUser) {
+    private void addMessage(String sender, String text, String timestamp, boolean isUser) {
         VBox messageContainer = new VBox(2);
         messageContainer.setPadding(new Insets(5));
 
@@ -135,6 +142,9 @@ public class UI extends Application {
 
         Text messageText = new Text(text);
         messageText.setStyle("-fx-font-size: 14px;");
+
+        Label timestampLabel = new Label(timestamp);
+        timestampLabel.setStyle("-fx-text-fill: grey; -fx-font-size: 10px;");
 
         TextFlow messageBubble = new TextFlow(messageText);
         messageBubble.setMaxWidth(250);
@@ -151,7 +161,8 @@ public class UI extends Application {
             messageContainer.setAlignment(Pos.CENTER_LEFT);
         }
 
-        messageContainer.getChildren().addAll(senderLabel, messageBubble);
+        // Add message and timestamp
+        messageContainer.getChildren().addAll(senderLabel, messageBubble, timestampLabel);
         chatBox.getChildren().add(messageContainer);
     }
 
@@ -183,7 +194,7 @@ public class UI extends Application {
         contactBox.setOnMouseExited(event -> contactBox.setStyle("-fx-background-color: #ffffff; -fx-border-color: #d0d0d0; -fx-background-radius: 5; -fx-border-radius: 5;"));
 
         messageHistory.put(name, new ArrayList<>());
-        messageHistory.get(name).add(new String[]{name, lastMessage});
+        messageHistory.get(name).add(new String[]{name, lastMessage, "Yesterday"});
 
         contactBox.setOnMouseClicked(event -> {
             currentChat = name;
@@ -208,7 +219,7 @@ public class UI extends Application {
     private void updateChatBox(String name) {
         chatBox.getChildren().clear();
         for (String[] message : messageHistory.get(name)) {
-            addMessage(message[0], message[1], message[0].equals("You"));
+            addMessage(message[0], message[1], message[2], message[0].equals("You"));
         }
     }
 
