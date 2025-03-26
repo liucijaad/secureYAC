@@ -269,13 +269,19 @@ public class UI extends Application {
         addContactButton.setMaxWidth(Double.MAX_VALUE);
         addContactButton.setOnAction(e -> showAddContact());
 
+        // Connection settings button
+        Button connectButton = new Button("⚙");
+        connectButton.setStyle("-fx-font-size: 18px; -fx-background-color: transparent;");
+        connectButton.setMaxWidth(Double.MAX_VALUE);
+        connectButton.setOnAction(e -> showPeerConnectionDialog());
+
         // Left sidebar with contacts list
         contactsList = new VBox(10);
         contactsList.setPadding(new Insets(10));
         contactsList.setStyle("-fx-background-color: #e0e0e0;");
 
         HBox buttonRow = new HBox(10);
-        buttonRow.getChildren().addAll(addContactButton);
+        buttonRow.getChildren().addAll(addContactButton, connectButton);
         contactsList.getChildren().add(buttonRow);
 
         contactsScroll = new ScrollPane(contactsList);
