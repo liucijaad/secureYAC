@@ -263,28 +263,66 @@ public class UI extends Application {
         contactBoxes = new HashMap<>();
         lastMessageLabels = new HashMap<>();
 
+        // Left sidebar with contacts list
+        BorderPane contactsPane = new BorderPane();
+        contactsPane.setStyle("-fx-background-color: #e0e0e0;");
+
+        // Top area of contacts pane
+        HBox contactsHeader = new HBox(10);
+        contactsHeader.setPadding(new Insets(10));
+        contactsHeader.setAlignment(Pos.CENTER_LEFT);
+
         // Add contact button
         Button addContactButton = new Button("+");
         addContactButton.setStyle("-fx-font-size: 18px; -fx-background-color: transparent;");
-        addContactButton.setMaxWidth(Double.MAX_VALUE);
         addContactButton.setOnAction(e -> showAddContact());
 
-        // Connection settings button
-        Button connectButton = new Button("⚙");
-        connectButton.setStyle("-fx-font-size: 18px; -fx-background-color: transparent;");
-        connectButton.setMaxWidth(Double.MAX_VALUE);
-        connectButton.setOnAction(e -> showPeerConnectionDialog());
+        Label contactsHeading = new Label("Contacts");
+        contactsHeading.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
 
-        // Left sidebar with contacts list
+        contactsHeader.getChildren().addAll(addContactButton, contactsHeading);
+        contactsPane.setTop(contactsHeader);
+
         contactsList = new VBox(10);
         contactsList.setPadding(new Insets(10));
-        contactsList.setStyle("-fx-background-color: #e0e0e0;");
 
-        HBox buttonRow = new HBox(10);
-        buttonRow.getChildren().addAll(addContactButton, connectButton);
-        contactsList.getChildren().add(buttonRow);
+        ScrollPane contactsListScroll = new ScrollPane(contactsList);
+        contactsListScroll.setFitToWidth(true);
+        contactsListScroll.setFitToHeight(true);
+        contactsPane.setCenter(contactsListScroll);
 
-        contactsScroll = new ScrollPane(contactsList);
+        // Bottom area of contacts pane with user profile and settings
+        HBox userProfileArea = new HBox(10);
+        userProfileArea.setPadding(new Insets(10));
+        userProfileArea.setAlignment(Pos.CENTER_LEFT);
+        userProfileArea.setStyle("-fx-background-color: #d0d0d0; -fx-background-radius: 5;");
+
+        // User profile image
+        ImageView userProfileImage = new ImageView(new Image("https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"));
+        userProfileImage.setFitWidth(40);
+        userProfileImage.setFitHeight(40);
+
+        // User info
+        VBox userInfo = new VBox(2);
+        Label usernameLabel = new Label(username);
+        usernameLabel.setStyle("-fx-font-weight: bold;");
+        Label portLabel = new Label("Port: " + port);
+        portLabel.setStyle("-fx-font-size: 10px; -fx-text-fill: grey;");
+        userInfo.getChildren().addAll(usernameLabel, portLabel);
+
+        // Settings button
+        Button settingsButton = new Button("⚙");
+        settingsButton.setStyle("-fx-font-size: 18px; -fx-background-color: transparent;");
+        settingsButton.setOnAction(e -> showPeerConnectionDialog());
+
+        // Add spacing to push settings button to the right
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        userProfileArea.getChildren().addAll(userProfileImage, userInfo, spacer, settingsButton);
+        contactsPane.setBottom(userProfileArea);
+
+        contactsScroll = new ScrollPane(contactsPane);
         contactsScroll.setFitToWidth(true);
         contactsScroll.setFitToHeight(true);
 
@@ -306,8 +344,8 @@ public class UI extends Application {
         topBarUsername = new Label("Select a Contact");
         topBarUsername.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
 
-        // User status label (showing current username and port)
-        Label userStatusLabel = new Label("Logged in as: " + username + " (Port: " + port + ")");
+        // User status label (showing current username)
+        Label userStatusLabel = new Label("Logged in as: " + username);
         userStatusLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: grey;");
 
         VBox userInfoBox = new VBox(5);
