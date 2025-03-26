@@ -11,9 +11,11 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -23,6 +25,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class UI extends Application {
@@ -40,6 +44,12 @@ public class UI extends Application {
     private ServerThread serverThread;
     private String username;
     private int port;
+    private FileTransferManager fileTransferManager;
+    private ExecutorService executorService;
+    private Stage primaryStage;
+
+    // Map of peer addresses to sockets to track active connections
+    private HashMap<String, PeerThread> activePeers = new HashMap<>();
 
     // Ports to try, starting from 8000
     private static final AtomicInteger NEXT_PORT = new AtomicInteger(8000);
@@ -47,6 +57,12 @@ public class UI extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+        this.primaryStage = primaryStage;
+        executorService = Executors.newFixedThreadPool(4);
+        fileTransferManager = new FileTransferManager();
+        fileTransferManager.setOnFileReceived(this::handleFileReceived);
+        fileTransferManager.setOnTransferProgress(this::handleTransferProgress);
+
         showLoginDialog(primaryStage);
     }
 
@@ -75,7 +91,7 @@ public class UI extends Application {
         dialog.getDialogPane().setContent(grid);
 
         // Request focus on the username field by default
-        Platform.runLater(() -> usernameField.requestFocus());
+        Platform.runLater(usernameField::requestFocus);
 
         // Convert the result when the login button is clicked
         dialog.setResultConverter(dialogButton -> {
@@ -96,6 +112,7 @@ public class UI extends Application {
                     try {
                         // Start the server thread with the automatically assigned port
                         serverThread = new ServerThread(String.valueOf(port));
+                        serverThread.setFileTransferHandler(fileTransferManager::handleIncomingFileTransfer);
                         serverThread.start();
 
                         // Now show the main UI
@@ -196,32 +213,41 @@ public class UI extends Application {
             for (String peerAddress : inputValues) {
                 String[] address = peerAddress.split(":");
                 if (address.length == 2) {
-                    Socket socket = null;
-                    try {
-                        socket = new Socket(address[0], Integer.parseInt(address[1]));
-                        PeerThread peerThread = new PeerThread(socket);
-                        peerThread.setMessageHandler(this::handleIncomingMessage);
-                        peerThread.start();
-
-                        // Add the peer as a contact if not already added
-                        Platform.runLater(() -> {
-                            if (!messageHistory.containsKey(peerAddress)) {
-                                addContact(peerAddress, "Connected",
-                                        "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png");
-                            }
-                        });
-                    } catch (Exception e) {
-                        if (socket != null) {
-                            try {
-                                socket.close();
-                            } catch (IOException ioEx) {
-                                // Ignore
-                            }
-                        }
-                        showErrorAlert("Connection Error", "Failed to connect to " + peerAddress, e.getMessage());
-                    }
+                    connectToPeer(address[0], address[1], peerAddress);
                 }
             }
+        }
+    }
+
+    private void connectToPeer(String host, String portStr, String peerAddress) {
+        Socket socket = null;
+        try {
+            int portNum = Integer.parseInt(portStr);
+            socket = new Socket(host, portNum);
+            PeerThread peerThread = new PeerThread(socket);
+            peerThread.setMessageHandler(this::handleIncomingMessage);
+            peerThread.setFileTransferHandler(fileTransferManager::handleIncomingFileTransfer);
+            peerThread.start();
+
+            // Store the peer thread for later reference
+            activePeers.put(peerAddress, peerThread);
+
+            // Add the peer as a contact if not already added
+            Platform.runLater(() -> {
+                if (!messageHistory.containsKey(peerAddress)) {
+                    addContact(peerAddress, "Connected",
+                            "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png");
+                }
+            });
+        } catch (Exception e) {
+            if (socket != null) {
+                try {
+                    socket.close();
+                } catch (IOException ioEx) {
+                    // Ignore
+                }
+            }
+            showErrorAlert("Connection Error", "Failed to connect to " + peerAddress, e.getMessage());
         }
     }
 
@@ -254,6 +280,135 @@ public class UI extends Application {
                 System.err.println("Error processing incoming message: " + e.getMessage());
             }
         });
+    }
+
+    private void handleFileReceived(String message) {
+        Platform.runLater(() -> {
+            // Add the file received confirmation as a system message
+            addSystemMessage(message);
+
+            // Create an alert to notify the user
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("File Received");
+            alert.setHeaderText("File Transfer Complete");
+            alert.setContentText(message + "\nSaved to: " + fileTransferManager.getDownloadDirectory());
+
+            // Add a button to open the download directory
+            ButtonType openFolderButton = new ButtonType("Open Folder");
+            alert.getButtonTypes().setAll(openFolderButton, ButtonType.OK);
+
+            alert.showAndWait().ifPresent(buttonType -> {
+                if (buttonType == openFolderButton) {
+                    try {
+                        // Open the download directory using the system file explorer
+                        java.awt.Desktop.getDesktop().open(new File(fileTransferManager.getDownloadDirectory()));
+                    } catch (IOException e) {
+                        showErrorAlert("Error", "Could not open download directory", e.getMessage());
+                    }
+                }
+            });
+        });
+    }
+
+    private void handleTransferProgress(String message) {
+        Platform.runLater(() -> {
+            // Show progress in the current chat
+            if (currentChat != null) {
+                updateSystemMessage(message);
+            }
+        });
+    }
+
+    private void addSystemMessage(String text) {
+        if (currentChat != null) {
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy    HH:mm:ss");
+            String timestamp = now.format(formatter);
+
+            messageHistory.get(currentChat).add(new String[]{"SYSTEM", text, timestamp});
+            updateChatBox(currentChat);
+        }
+    }
+
+    // Map to track file transfer message indices in the message history
+    private HashMap<String, Integer> fileTransferMessageIndices = new HashMap<>();
+
+    private void updateSystemMessage(String text) {
+        // Find the latest system message and update it (for progress updates)
+        if (currentChat != null) {
+            List<String[]> messages = messageHistory.get(currentChat);
+            String transferKey = "";
+
+            // Determine the key for this transfer (sender + filename)
+            if (text.startsWith("Receiving file from")) {
+                // Extract sender and filename from message
+                // Format: "Receiving file from [sender]: [filename] ([percentage]%)"
+                String[] parts = text.split(":");
+                if (parts.length >= 2) {
+                    String sender = parts[0].replace("Receiving file from ", "").trim();
+                    String fileInfo = parts[1].trim();
+                    String filename = fileInfo.split("\\(")[0].trim();
+                    transferKey = sender + "-" + filename;
+
+                    // Check if this transfer is complete
+                    if (text.contains("(100%)")) {
+                        // If complete, remove from tracking and let the complete message appear
+                        if (fileTransferMessageIndices.containsKey(transferKey)) {
+                            int index = fileTransferMessageIndices.get(transferKey);
+                            if (index < messages.size()) {
+                                // Remove the progress message
+                                messages.remove(index);
+                            }
+                            fileTransferMessageIndices.remove(transferKey);
+                        }
+                        return;
+                    }
+                }
+            } else if (text.startsWith("Sending file:")) {
+                // Extract filename from message
+                // Format: "Sending file: [filename] ([percentage]%)"
+                String[] parts = text.split(":");
+                if (parts.length >= 2) {
+                    String fileInfo = parts[1].trim();
+                    String filename = fileInfo.split("\\(")[0].trim();
+                    transferKey = "sending-" + filename;
+
+                    // Check if this transfer is complete
+                    if (text.contains("(100%)")) {
+                        // If complete, remove from tracking and let the complete message appear
+                        if (fileTransferMessageIndices.containsKey(transferKey)) {
+                            int index = fileTransferMessageIndices.get(transferKey);
+                            if (index < messages.size()) {
+                                // Remove the progress message
+                                messages.remove(index);
+                            }
+                            fileTransferMessageIndices.remove(transferKey);
+                        }
+                        return;
+                    }
+                }
+            }
+
+            // If this is a tracked file transfer, update the existing message
+            if (!transferKey.isEmpty() && fileTransferMessageIndices.containsKey(transferKey)) {
+                int index = fileTransferMessageIndices.get(transferKey);
+                if (index < messages.size()) {
+                    messages.get(index)[1] = text;
+                    updateChatBox(currentChat);
+                    return;
+                }
+            }
+
+            // If we get here, this is a new file transfer or the tracked message was lost
+            if (!transferKey.isEmpty()) {
+                // Add a new system message and track its index
+                addSystemMessage(text);
+                fileTransferMessageIndices.put(transferKey, messages.size() - 1);
+            } else {
+                // Regular system message, not a file transfer
+                addSystemMessage(text);
+            }
+        }
     }
 
     private void initMainUI(Stage primaryStage) {
@@ -344,7 +499,7 @@ public class UI extends Application {
         topBarUsername = new Label("Select a Contact");
         topBarUsername.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
 
-        // User status label (showing current username)
+// User status label (showing current username)
         Label userStatusLabel = new Label("Logged in as: " + username);
         userStatusLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: grey;");
 
@@ -361,24 +516,41 @@ public class UI extends Application {
         ScrollPane chatScroll = new ScrollPane(chatBox);
         chatScroll.setFitToWidth(true);
         chatScroll.setFitToHeight(true);
+        chatScroll.vvalueProperty().bind(chatBox.heightProperty());
         chatArea.setCenter(chatScroll);
 
         // Input area
+        VBox inputContainer = new VBox(5);
+        inputContainer.setPadding(new Insets(10));
+
+        // Message input field and send button
         HBox inputArea = new HBox(10);
-        inputArea.setPadding(new Insets(10));
         inputArea.setAlignment(Pos.CENTER);
 
         TextField messageField = new TextField();
         messageField.setPromptText("Type a message...");
         messageField.setPrefWidth(400);
+        HBox.setHgrow(messageField, Priority.ALWAYS);
 
         Button sendButton = new Button("Send");
         sendButton.setOnAction(e -> sendMessage(messageField.getText()));
 
         messageField.setOnAction(e -> sendMessage(messageField.getText()));
 
-        inputArea.getChildren().addAll(messageField, sendButton);
-        chatArea.setBottom(inputArea);
+        // File attachment button
+        Button attachButton = new Button("📎");
+        attachButton.setTooltip(new Tooltip("Send File"));
+        attachButton.setStyle("-fx-font-size: 18px; -fx-background-color: transparent;");
+        attachButton.setOnAction(e -> sendFile());
+
+        inputArea.getChildren().addAll(messageField, attachButton, sendButton);
+
+        // Add a file transfer progress label
+        Label fileTransferLabel = new Label("");
+        fileTransferLabel.setStyle("-fx-font-size: 10px; -fx-text-fill: grey;");
+
+        inputContainer.getChildren().addAll(inputArea, fileTransferLabel);
+        chatArea.setBottom(inputContainer);
 
         // Use SplitPane to divide screen into two resizable parts
         splitPane = new SplitPane();
@@ -394,7 +566,94 @@ public class UI extends Application {
         primaryStage.show();
 
         // Set up close event handler
-        primaryStage.setOnCloseRequest(e -> System.exit(0));
+        primaryStage.setOnCloseRequest(e -> {
+            executorService.shutdown();
+            System.exit(0);
+        });
+    }
+
+    private void sendFile() {
+        if (currentChat == null) {
+            showErrorAlert("Error", "No Contact Selected", "Please select a contact to send a file to.");
+            return;
+        }
+
+        // Open file chooser
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Select File to Send");
+        File selectedFile = fileChooser.showOpenDialog(primaryStage);
+
+        if (selectedFile != null) {
+            // Check file size
+            long fileSize = selectedFile.length();
+
+            if (fileSize > 100 * 1024 * 1024) { // 100 MB limit
+                showErrorAlert("Error", "File Too Large",
+                        "The selected file is too large. Maximum size is 100 MB.");
+                return;
+            }
+
+            // Show confirmation dialog
+            Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
+            confirmDialog.setTitle("Send File");
+            confirmDialog.setHeaderText("Send " + selectedFile.getName() + " to " + currentChat + "?");
+            confirmDialog.setContentText("File size: " + formatFileSize(fileSize));
+
+            Optional<ButtonType> result = confirmDialog.showAndWait();
+
+            if (result.isPresent() && result.get() == ButtonType.OK) {
+                // Start file transfer in a background thread
+                executorService.submit(() -> {
+                    try {
+                        // Prepare file transfer messages
+                        JSONObject[] fileMessages = fileTransferManager.prepareFileTransfer(username, selectedFile);
+
+                        // Update UI with initial progress message
+                        final String fileName = selectedFile.getName();
+                        Platform.runLater(() -> updateSystemMessage("Sending file: " + fileName + " (0%)"));
+
+                        // Send each chunk with a small delay to prevent overwhelming the network
+                        for (int i = 0; i < fileMessages.length; i++) {
+                            final int progress = (i + 1) * 100 / fileMessages.length;
+                            serverThread.sendMessage(fileMessages[i].toString());
+
+                            // Update progress every 5% or for the initial update
+                            if (progress % 5 == 0 || i == 0) {
+                                Platform.runLater(() -> updateSystemMessage("Sending file: " + fileName + " (" + progress + "%)"));
+                            }
+
+                            // Send the final progress update for 100%
+                            if (i == fileMessages.length - 1) {
+                                Platform.runLater(() -> updateSystemMessage("Sending file: " + fileName + " (100%)"));
+                            }
+
+                            if (fileMessages.length > 1) {
+                                Thread.sleep(50); // Small delay between chunks
+                            }
+                        }
+
+                        // File transfer complete
+                        Platform.runLater(() -> addSystemMessage("File sent: " + selectedFile.getName()));
+
+                    } catch (Exception e) {
+                        Platform.runLater(() -> showErrorAlert("Error", "Failed to Send File", e.getMessage()));
+                    }
+                });
+            }
+        }
+    }
+
+    private String formatFileSize(long size) {
+        final String[] units = new String[] { "B", "KB", "MB", "GB", "TB" };
+        int unitIndex = 0;
+        double unitValue = size;
+
+        while (unitValue > 1024 && unitIndex < units.length - 1) {
+            unitValue /= 1024;
+            unitIndex++;
+        }
+
+        return String.format("%.2f %s", unitValue, units[unitIndex]);
     }
 
     private void sendMessage(String text) {
@@ -421,7 +680,8 @@ public class UI extends Application {
             }
 
             // Clear the message field
-            ((TextField)((HBox)((BorderPane)splitPane.getItems().get(1)).getBottom()).getChildren().getFirst()).clear();
+            TextField messageField = (TextField)((HBox)((VBox)((BorderPane)splitPane.getItems().get(1)).getBottom()).getChildren().getFirst()).getChildren().getFirst();
+            messageField.clear();
         }
     }
 
@@ -447,6 +707,11 @@ public class UI extends Application {
             messageBubble.setStyle("-fx-background-color: #0084ff; -fx-text-fill: white; -fx-background-radius: 10;");
             messageText.setFill(javafx.scene.paint.Color.WHITE);
             messageContainer.setAlignment(Pos.CENTER_RIGHT);
+        } else if ("SYSTEM".equals(sender)) {
+            // System messages (like file transfers) have a different style
+            messageBubble.setStyle("-fx-background-color: #f0f0f0; -fx-text-fill: black; -fx-background-radius: 10;");
+            messageText.setFill(javafx.scene.paint.Color.GRAY);
+            messageContainer.setAlignment(Pos.CENTER);
         } else {
             messageBubble.setStyle("-fx-background-color: #e0e0e0; -fx-text-fill: black; -fx-background-radius: 10;");
             messageText.setFill(javafx.scene.paint.Color.BLACK);
@@ -454,7 +719,12 @@ public class UI extends Application {
         }
 
         // Add message and timestamp
-        messageContainer.getChildren().addAll(senderLabel, messageBubble, timestampLabel);
+        if ("SYSTEM".equals(sender)) {
+            messageContainer.getChildren().addAll(messageBubble, timestampLabel);
+        } else {
+            messageContainer.getChildren().addAll(senderLabel, messageBubble, timestampLabel);
+        }
+
         chatBox.getChildren().add(messageContainer);
     }
 
@@ -559,7 +829,7 @@ public class UI extends Application {
         dialog.getDialogPane().setContent(grid);
 
         // Request focus on the field by default
-        Platform.runLater(() -> addressField.requestFocus());
+        Platform.runLater(addressField::requestFocus);
 
         // Convert the result
         dialog.setResultConverter(dialogButton -> {
@@ -583,31 +853,7 @@ public class UI extends Application {
                         String contactId = host + ":" + port;
 
                         if (!messageHistory.containsKey(contactId)) {
-                            // Try to establish connection
-                            Socket socket = null;
-                            try {
-                                socket = new Socket(host, Integer.parseInt(port));
-                                PeerThread peerThread = new PeerThread(socket);
-                                peerThread.setMessageHandler(this::handleIncomingMessage);
-                                peerThread.start();
-
-                                addContact(contactId, "Connected",
-                                        "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png");
-                            } catch (Exception e) {
-                                if (socket != null) {
-                                    try {
-                                        socket.close();
-                                    } catch (IOException ioEx) {
-                                        // Ignore
-                                    }
-                                }
-
-                                // Add the contact anyway, even if connection failed
-                                addContact(contactId, "Could not connect",
-                                        "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png");
-
-                                showErrorAlert("Connection Error", "Added contact but failed to connect", e.getMessage());
-                            }
+                            connectToPeer(host, port, contactId);
                         }
                     }
                 } else {
