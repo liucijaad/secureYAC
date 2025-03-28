@@ -2,12 +2,13 @@ stages:
   - build
   - test
 
+image: gradle:8.10
+
 before_script:
   - cd src/
   
 build-job:
   stage: build
-  image: gradle:8.10
   script:
     - gradle --build-cache clean build
   cache:
@@ -19,7 +20,6 @@ build-job:
 
 unit-test-job:
   stage: test
-  image: gradle:8.10
   script:
     - gradle test
   cache:
@@ -28,6 +28,15 @@ unit-test-job:
     paths:
       - build
       - .gradle
+  artifacts:
+    when: always
+    expire_in: 1 days
+    paths:
+      - build/libs/*.jar
+      - build/test-results/test/*.xml
+    reports:
+      junit:
+        - build/test-results/test/*.xml
 
 
 
