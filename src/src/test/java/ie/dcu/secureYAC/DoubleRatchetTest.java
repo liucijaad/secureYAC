@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 public class DoubleRatchetTest {
 
     @Test
-    public void encryptAndDecryptTest() throws Exception {
+    public void testEncryptAndDecrypt() throws Exception {
         Random random = new SecureRandom();
         byte[] plaintext = new byte[60];
         random.nextBytes(plaintext);
@@ -26,7 +26,7 @@ public class DoubleRatchetTest {
     }
 
     @Test
-    public void AESTest() throws Exception {
+    public void testAES() throws Exception {
         User alice = new User("Alice", 50);
         User bob = new User("Bob", 50);
         PreKeyBundle bobPreKey = bob.getPreKeyBundle();

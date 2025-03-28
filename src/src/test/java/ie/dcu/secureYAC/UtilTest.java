@@ -16,7 +16,7 @@ public class UtilTest {
     SecureRandom random = new SecureRandom();
 
     @RepeatedTest(value = 10)
-    public void changeEndianTest() {
+    public void testChangeEndian() {
         byte[] testByte = new byte[16];
         random.nextBytes(testByte);
         byte[] transformedByte = Util.changeEndian(testByte);
@@ -25,7 +25,7 @@ public class UtilTest {
     }
 
     @RepeatedTest(value = 10)
-    public void byteArrToBigIntToByteArrTest() {
+    public void testByteArrayToBigIntToByteArray() {
         byte[] byteArr = new byte[32];
         random.nextBytes(byteArr);
         BigInteger arrBigInt = Util.byteArrayToBigInteger(byteArr).abs();
@@ -34,7 +34,7 @@ public class UtilTest {
     }
 
     @Test
-    public void ConcatByteArraysTest() {
+    public void testConcatByteArrays() {
         byte[] firstArray = new byte[32];
         byte[] secondArray = new byte[32];
         random.nextBytes(firstArray);
@@ -45,14 +45,14 @@ public class UtilTest {
     }
 
     @RepeatedTest(value = 10)
-    public void hashTest() throws NoSuchAlgorithmException {
+    public void testHash() throws NoSuchAlgorithmException {
         byte[] testArr = new byte[random.nextInt(32)];
         random.nextBytes(testArr);
         assertEquals(Util.hash(testArr).length, 64);
     }
 
     @Test
-    public void HKDFTest() throws NoSuchAlgorithmException {
+    public void testHKDF() throws NoSuchAlgorithmException {
         byte[] key = new byte[32];
         random.nextBytes(key);
         byte[] salt = new byte[32];
@@ -65,7 +65,7 @@ public class UtilTest {
     }
 
     @Test
-    public void HMACTest() {
+    public void testHMAC() {
         byte[] key = new byte[32];
         random.nextBytes(key);
         byte[] firstHMAC = Util.HMAC("test".getBytes(), key);
@@ -74,7 +74,7 @@ public class UtilTest {
     }
 
     @RepeatedTest(value = 10)
-    public void loadFromIdFileTest() throws Exception {
+    public void testLoadFromIdFile() throws Exception {
         User test = new User("test", 50);
         IdentityKeyBundle identity = test.getIdentityKeyBundle();
         identity.export();
@@ -94,7 +94,7 @@ public class UtilTest {
     }
 
     @RepeatedTest(value = 10)
-    public void loadFromPkbFileTest() throws Exception {
+    public void testLoadFromPkbFile() throws Exception {
         User test = new User("test", 50);
         PreKeyBundle preKey = test.getPreKeyBundle();
         preKey.export();

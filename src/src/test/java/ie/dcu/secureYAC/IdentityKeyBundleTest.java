@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 public class IdentityKeyBundleTest {
 
     @Test
-    public void initOTPKTest() throws Exception {
+    public void testInitOTPK() throws Exception {
         IdentityKeyBundle identity = new IdentityKeyBundle("test",
             X25519.generatePrivateKey(), X25519.generatePrivateKey(), 150);
         assertEquals(identity.getOTPKFresh().size(), 150);
@@ -19,7 +19,7 @@ public class IdentityKeyBundleTest {
     }
 
     @Test
-    public void generateOTPKTest() throws Exception {
+    public void testGenerateOTPK() throws Exception {
         IdentityKeyBundle identity = new IdentityKeyBundle("test",
             X25519.generatePrivateKey(), X25519.generatePrivateKey(), 50);
         assertEquals(identity.getOTPKFresh().size(), 50);
@@ -27,7 +27,7 @@ public class IdentityKeyBundleTest {
         assertEquals(identity.getOTPKFresh().size(), 51);
     }
     @Test
-    public void useOTPKTest() throws Exception {
+    public void testUseOTPK() throws Exception {
         IdentityKeyBundle identity = new IdentityKeyBundle("test",
             X25519.generatePrivateKey(), X25519.generatePrivateKey(), 50);
         byte[] usedKey = identity.useOTPK();
@@ -39,7 +39,7 @@ public class IdentityKeyBundleTest {
     }
 
     @Test
-    public void exportTest() throws Exception {
+    public void testExport() throws Exception {
         IdentityKeyBundle identity = new IdentityKeyBundle("test",
             X25519.generatePrivateKey(), X25519.generatePrivateKey(), 50);
         identity.export();
@@ -53,7 +53,7 @@ public class IdentityKeyBundleTest {
     }
 
     @Test
-    public void multiExportTest() throws Exception {
+    public void testMultiExport() throws Exception {
         IdentityKeyBundle identity = new IdentityKeyBundle("test",
             X25519.generatePrivateKey(), X25519.generatePrivateKey(), 50);
         for(int i = 10; i !=0; i--) {

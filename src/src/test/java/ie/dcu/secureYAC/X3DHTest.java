@@ -5,7 +5,7 @@ import org.junit.jupiter.api.RepeatedTest;
 public class X3DHTest {
 
     @RepeatedTest(value = 10)
-    public void sharedSecretCalculationTest() throws Exception {
+    public void testSharedSecretCalculation() throws Exception {
         User alice = new User("Alice", 50);
         User bob = new User("Bob", 50);
         PreKeyBundle bobBundle = bob.getPreKeyBundle();

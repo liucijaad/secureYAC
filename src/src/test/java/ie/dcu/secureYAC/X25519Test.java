@@ -8,7 +8,7 @@ import org.junit.jupiter.api.RepeatedTest;
 public class X25519Test {
 
     @RepeatedTest(value = 10) 
-    public void keyLengthTest() {
+    public void testKeyLength() {
         byte[] privateKey = X25519.generatePrivateKey();
         assertEquals(privateKey.length, 32);
         byte[] publicKey = X25519.generatePublicKey(privateKey);
@@ -16,7 +16,7 @@ public class X25519Test {
     }
 
     @RepeatedTest(value = 10)
-    public void clampingTest() {
+    public void testClamping() {
         byte[] key = X25519.generatePrivateKey();
         byte tmp;
         for(int k = 0; k < 3; k ++) {
@@ -29,7 +29,7 @@ public class X25519Test {
     }
 
     @RepeatedTest(value = 10)
-        public void publicKeyGenerationTest() {
+        public void testPublicKeyGeneration() {
             byte[] privateKey = X25519.generatePrivateKey();
             byte[] pubKeyOne = X25519.generatePublicKey(privateKey);
             byte[] pubKeyTwo = X25519.generatePublicKey(privateKey);

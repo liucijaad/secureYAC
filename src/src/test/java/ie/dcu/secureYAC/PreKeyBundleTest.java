@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 public class PreKeyBundleTest {
 
     @Test
-    public void exportTest() throws Exception {
+    public void testExport() throws Exception {
         User test = new User("test", 50);
         PreKeyBundle prekey = test.getPreKeyBundle();
         prekey.export();
@@ -24,7 +24,7 @@ public class PreKeyBundleTest {
     }
 
     @Test
-    public void multiExportTest() throws Exception {
+    public void testMultiExport() throws Exception {
         User test = new User("test", 50);
         PreKeyBundle prekey = test.getPreKeyBundle();
         for(int i = 10; i !=0; i--) {

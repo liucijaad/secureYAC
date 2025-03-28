@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 public class MessageTest {
 
     @Test
-    public void headerExtractTest() throws Exception {
+    public void testHeaderExtract() throws Exception {
         User alice = new User("alice", 50);
         User bob = new User("bob", 50);
         Session test = new Session(alice, bob.getPreKeyBundle(), false);
@@ -21,7 +21,7 @@ public class MessageTest {
     }
 
     @Test
-    public void verifyTest() {
+    public void testVerify() {
         byte[] plaintext = "Hello World!".getBytes();
         byte[] authKey = new byte[32];
         SecureRandom random = new SecureRandom();
