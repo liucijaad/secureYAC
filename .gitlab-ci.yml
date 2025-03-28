@@ -11,32 +11,11 @@ build-job:
   stage: build
   script:
     - gradle --build-cache clean build
-  cache:
-    key: "$CI_COMMIT_REF_NAME"
-    policy: push
-    paths:
-      - build
-      - .gradle
 
 unit-test-job:
   stage: test
   script:
     - gradle test
-  cache:
-    key: "$CI_COMMIT_REF_NAME"
-    policy: pull
-    paths:
-      - build
-      - .gradle
-  artifacts:
-    when: always
-    expire_in: 1 days
-    paths:
-      - build/libs/*.jar
-      - build/test-results/test/*.xml
-    reports:
-      junit:
-        - build/test-results/test/*.xml
 
 
 
