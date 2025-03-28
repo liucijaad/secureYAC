@@ -10,16 +10,24 @@ build-job:
   image: gradle:8.10
   script:
     - gradle --build-cache clean build
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: push
+    paths:
+      - build
+      - .gradle
 
 unit-test-job:
   stage: test
   image: gradle:8.10
   script:
     - gradle test
-  artifacts:
-    when: always
-    reports:
-      junit: build/test-results/test/**/TEST-*.xml
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: pull
+    paths:
+      - build
+      - .gradle
 
 
 
