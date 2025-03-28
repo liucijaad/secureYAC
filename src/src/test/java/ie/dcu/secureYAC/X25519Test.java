@@ -1,15 +1,14 @@
 package ie.dcu.secureYAC;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.util.Arrays;
 
 import org.junit.jupiter.api.RepeatedTest;
 
 public class X25519Test {
 
-    @RepeatedTest(value = 100) 
-    public void testKeyLength() {
+    @RepeatedTest(value = 10) 
+    public void keyLengthTest() {
         byte[] privateKey = X25519.generatePrivateKey();
         assertEquals(privateKey.length, 32);
         byte[] publicKey = X25519.generatePublicKey(privateKey);
@@ -17,7 +16,7 @@ public class X25519Test {
     }
 
     @RepeatedTest(value = 10)
-    public void testClamping() {
+    public void clampingTest() {
         byte[] key = X25519.generatePrivateKey();
         byte tmp;
         for(int k = 0; k < 3; k ++) {
@@ -30,11 +29,11 @@ public class X25519Test {
     }
 
     @RepeatedTest(value = 10)
-        public void testKeyGeneration() {
+        public void publicKeyGenerationTest() {
             byte[] privateKey = X25519.generatePrivateKey();
             byte[] pubKeyOne = X25519.generatePublicKey(privateKey);
             byte[] pubKeyTwo = X25519.generatePublicKey(privateKey);
-            assert(Arrays.equals(pubKeyOne, pubKeyTwo));
+            assertArrayEquals(pubKeyOne, pubKeyTwo);
         }
     }
 

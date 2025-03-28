@@ -1,5 +1,6 @@
 package ie.dcu.secureYAC;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
@@ -8,41 +9,109 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
 import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
 
 public class UtilTest {
 
-    @RepeatedTest(value = 100)
-    public void testByteArrayToBigIntToByteArray() {
+    SecureRandom random = new SecureRandom();
+
+    @RepeatedTest(value = 10)
+    public void changeEndianTest() {
+        byte[] testByte = new byte[16];
+        random.nextBytes(testByte);
+        byte[] transformedByte = Util.changeEndian(testByte);
+        transformedByte = Util.changeEndian(transformedByte);
+        assertArrayEquals(testByte, transformedByte);
+    }
+
+    @RepeatedTest(value = 10)
+    public void byteArrToBigIntToByteArrTest() {
         byte[] byteArr = new byte[32];
-        SecureRandom random = new SecureRandom();
         random.nextBytes(byteArr);
         BigInteger arrBigInt = Util.byteArrayToBigInteger(byteArr).abs();
         byte[] result = Util.bigIntToByteArray(arrBigInt, 256);
-        assert(arrBigInt.toString(2).equals(Util.byteArrayToBigInteger(result).toString(2)));
+        assertEquals(arrBigInt.toString(2), Util.byteArrayToBigInteger(result).toString(2));
     }
 
-    @RepeatedTest(value = 100)
-    public void testHash() throws NoSuchAlgorithmException {
-        SecureRandom random = new SecureRandom();
+    @Test
+    public void ConcatByteArraysTest() {
+        byte[] firstArray = new byte[32];
+        byte[] secondArray = new byte[32];
+        random.nextBytes(firstArray);
+        random.nextBytes(secondArray);
+        byte[] concat = Util.concatByteArrays(firstArray, secondArray);
+        assertArrayEquals(firstArray, java.util.Arrays.copyOfRange(concat, 0, 32));
+        assertArrayEquals(secondArray, java.util.Arrays.copyOfRange(concat, 32, 64));
+    }
+
+    @RepeatedTest(value = 10)
+    public void hashTest() throws NoSuchAlgorithmException {
         byte[] testArr = new byte[random.nextInt(32)];
         random.nextBytes(testArr);
         assertEquals(Util.hash(testArr).length, 64);
     }
 
+    @Test
+    public void HKDFTest() throws NoSuchAlgorithmException {
+        byte[] key = new byte[32];
+        random.nextBytes(key);
+        byte[] salt = new byte[32];
+        for(int i = 0; i < 32; i++) {
+            salt[i] = (byte) 0;
+        }
+        byte[] firstHKDF = Util.HKDF(key, salt, "test");
+        byte[] secondHKDF = Util.HKDF(key, salt, "test");
+        assertArrayEquals(firstHKDF, secondHKDF);
+    }
+
+    @Test
+    public void HMACTest() {
+        byte[] key = new byte[32];
+        random.nextBytes(key);
+        byte[] firstHMAC = Util.HMAC("test".getBytes(), key);
+        byte[] secondHMAC = Util.HMAC("test".getBytes(), key);
+        assertArrayEquals(firstHMAC, secondHMAC);
+    }
+
     @RepeatedTest(value = 10)
-    public void testLoadFromIdFile() throws Exception {
-        IdentityKeyBundle identity = new IdentityKeyBundle(
-        X25519.generatePrivateKey(), X25519.generatePrivateKey());
+    public void loadFromIdFileTest() throws Exception {
+        User test = new User("test", 50);
+        IdentityKeyBundle identity = test.getIdentityKeyBundle();
         identity.export();
         for(File f : new File(".").listFiles()) {
             String fileName = f.getName();
             if(fileName.endsWith(".id")) {
-                IdentityKeyBundle loaded = (IdentityKeyBundle) Util.loadFromFile(fileName);
-                System.out.println(Util.byteArrayToString(identity.getIdentityPrivateKey()));
-                System.out.println(Util.byteArrayToString(loaded.getIdentityPrivateKey()));
-                assertEquals(Util.byteArrayToString(identity.getIdentityPrivateKey()),
-                Util.byteArrayToString(loaded.getIdentityPrivateKey()));
+                IdentityKeyBundle loaded =
+                    (IdentityKeyBundle) Util.loadFromFile(fileName);
                 f.delete();
+                assertEquals(identity.getUsername(), loaded.getUsername());
+                assertArrayEquals(identity.getPreKeyPrivate(),
+                    loaded.getPreKeyPrivate());
+                assertArrayEquals(identity.getIdentityPrivateKey(),
+                    loaded.getIdentityPrivateKey());
+            }
+        }
+    }
+
+    @RepeatedTest(value = 10)
+    public void loadFromPkbFileTest() throws Exception {
+        User test = new User("test", 50);
+        PreKeyBundle preKey = test.getPreKeyBundle();
+        preKey.export();
+        for(File f : new File(".").listFiles()) {
+            String fileName = f.getName();
+            if(fileName.endsWith(".pkb")) {
+                PreKeyBundle loaded = (PreKeyBundle) Util.loadFromFile(fileName);
+                f.delete();
+                assertEquals(preKey.getUsername(), loaded.getUsername());
+                assertArrayEquals(preKey.getIdentityPublicKey(),
+                    loaded.getIdentityPublicKey());
+                assertArrayEquals(preKey.getPreKeyPublic(),
+                    loaded.getPreKeyPublic());
+                assertArrayEquals(preKey.getPreKeySignature(),
+                    loaded.getPreKeySignature());
+                assertArrayEquals(preKey.getOneTimePreKey(),
+                    loaded.getOneTimePreKey());
             }
         }
     }

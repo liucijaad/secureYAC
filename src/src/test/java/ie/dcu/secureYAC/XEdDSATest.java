@@ -1,10 +1,10 @@
-package ie.dcu.secureYAC;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import org.junit.jupiter.api.RepeatedTest;
-
-public class XEdDSATest {
+//package ie.dcu.secureYAC;
+//
+//import static org.junit.jupiter.api.Assertions.assertEquals;
+//
+//import org.junit.jupiter.api.RepeatedTest;
+//
+//public class XEdDSATest {
     
     //@RepeatedTest(value = 10)
     //public void testKeyLength() {
@@ -38,4 +38,4 @@ public class XEdDSATest {
     //    assert(XEdDSA.verify(senderMontPrivKey, signature, xeddsaReceiver));
     //
     //}
-}
+//}
