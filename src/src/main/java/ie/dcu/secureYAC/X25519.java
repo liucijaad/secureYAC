@@ -6,7 +6,7 @@ import java.security.SecureRandom;
 /**
 *
     This class represents the Curve25519 elliptic curve. It is defined by the
-    Montgomery-form equation y^2 = x^3 + 486662 * x^2 + x over the PRIME field
+    Montgomery-form equation y^2 = x^3 + 486662 * x^2 + x over the prime field
     mod 2^255 - 19. This curve is also birationally equivalent to the twisted
     Edwards curve 486664 * x^2 + y^2 = 1 + 486660 * x^2 * y^2.
     Implementation based on parameters specified in
@@ -17,10 +17,10 @@ import java.security.SecureRandom;
 * @author Liucija Paulina Adomaviciute */
 
 public class X25519 {
-    private static final BigInteger PRIME =
-    new BigInteger("7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFED", 16);
-    private static final BigInteger BASE_POINT =
-    new BigInteger("20AE19A1B8A086B4E01EDD2C7748D14C923D4D7E6D7C61B229E9C5A27ECED3D9", 16);
+    public static final BigInteger PRIME =
+        new BigInteger("7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFED", 16);
+    public static final BigInteger BASE_POINT =
+        new BigInteger("20AE19A1B8A086B4E01EDD2C7748D14C923D4D7E6D7C61B229E9C5A27ECED3D9", 16);
     
     public X25519() {}
 
@@ -30,7 +30,7 @@ public class X25519 {
         random.nextBytes(privateKey);
         BigInteger keyInt = Util.byteArrayToBigInteger(privateKey).mod(PRIME);
         if(keyInt.equals(BigInteger.ZERO)) { //Generate new key if private key == 0.
-            generatePrivateKey();
+            return generatePrivateKey();
         }
         privateKey = Util.bigIntToByteArray(keyInt, 256);
         privateKey = clamping(privateKey);

@@ -15,7 +15,11 @@ unit-test-job:
   stage: test
   image: gradle:8.10
   script:
-    - gradle check
+    - gradle test
+  artifacts:
+    when: always
+    reports:
+      junit: build/test-results/test/**/TEST-*.xml
 
 
 

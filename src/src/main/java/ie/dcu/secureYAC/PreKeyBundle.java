@@ -15,10 +15,17 @@ public class PreKeyBundle extends KeyBundle {
 
     private byte[] oneTimePreKey;
 
-    PreKeyBundle(byte[] identityPublicKey, byte[] preKeyPublic,
+    PreKeyBundle(String username, byte[] identityPublicKey, byte[] preKeyPublic,
     byte[] preKeySignature, byte[] oneTimePreKey) {
-        super(identityPublicKey, preKeyPublic, preKeySignature);
+        super(username, identityPublicKey, preKeyPublic, preKeySignature);
         this.oneTimePreKey = oneTimePreKey;
+    }
+
+    PreKeyBundle(User user, IdentityKeyBundle identityKeyBundle)
+        throws Exception {
+        super(user.getUsername(), identityKeyBundle.getIdentityPublicKey(),
+            identityKeyBundle.getPreKeyPublic(), identityKeyBundle.getPreKeySignature());
+        this.oneTimePreKey = identityKeyBundle.useOTPK();
     }
 
     @Override
@@ -27,11 +34,13 @@ public class PreKeyBundle extends KeyBundle {
     }
 
     public void export() throws NoSuchAlgorithmException, IOException {
-        String fileName = Util.byteArrayToBigInteger(Util.hash(oneTimePreKey)).toString(16).substring(1, 11);
-        String data = Util.byteArrayToString(this.getIdentityPublicKey()) + "\n"
-        + Util.byteArrayToString(this.getPreKeyPublic()) + "\n"
-        + Util.byteArrayToString(this.getPreKeySignature()) + "\n"
-        + Util.byteArrayToString(this.getOneTimePreKey()) + "\n";
+        String fileName = Util.byteArrayToBigInteger(Util.hash(oneTimePreKey))
+            .toString(16).substring(1, 11);
+        String data = this.getUsername() + "\n"
+            + Util.byteArrayToString(this.getIdentityPublicKey()) + "\n"
+            + Util.byteArrayToString(this.getPreKeyPublic()) + "\n"
+            + Util.byteArrayToString(this.getPreKeySignature()) + "\n"
+            + Util.byteArrayToString(this.getOneTimePreKey());
         Util.writeToFile(fileName, ".pkb", data, 0);
     }
 }

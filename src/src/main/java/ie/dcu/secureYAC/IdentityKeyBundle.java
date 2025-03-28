@@ -20,25 +20,15 @@ public class IdentityKeyBundle extends KeyBundle {
     //One-time prekeys that have been exported but not used to initialise connection.
     private ArrayList<byte[]> OTPKPending = new ArrayList<byte[]>();
 
-    IdentityKeyBundle(byte[] identityPrivateKey, byte[] preKeyPrivate)
-            throws Exception {
-        super(identityPrivateKey, X25519.generatePublicKey(identityPrivateKey),
-        preKeyPrivate, X25519.generatePublicKey(preKeyPrivate));
-        for(int i = 50; i != 0; i--) {
-            generateOneTimePreKey();
-        }
-    }
-
-    IdentityKeyBundle(byte[] identityPrivateKey,  byte[] preKeyPrivate, int keyCount)
-            throws Exception {
-        super(identityPrivateKey, X25519.generatePublicKey(identityPrivateKey),
+    IdentityKeyBundle(String username, byte[] identityPrivateKey, 
+        byte[] preKeyPrivate, int keyCount) throws Exception {
+        super(username, identityPrivateKey, X25519.generatePublicKey(identityPrivateKey),
         preKeyPrivate, X25519.generatePublicKey(preKeyPrivate));
         for(int i = keyCount; i != 0; i--) {
             generateOneTimePreKey();
         }
     }
 
-    //Getters.
     public ArrayList<byte[]> getOTPKFresh() { return this.OTPKFresh; }
     public ArrayList<byte[]> getOTPKPending() { return this.OTPKPending; }
 
@@ -47,7 +37,7 @@ public class IdentityKeyBundle extends KeyBundle {
     }
 
     /**
-     * 
+    * 
         Takes first prekey from fresh one-time prekey array and moves it to
         pending-use one-time prekey array.
     *
@@ -81,14 +71,12 @@ public class IdentityKeyBundle extends KeyBundle {
         this.OTPKPending.remove(foundKey);
     }
 
-    public PreKeyBundle exportPreKeyBundle() throws Exception {
-        byte[] otpk = this.useOTPK();
-        return new PreKeyBundle(this.getIdentityPublicKey(), this.getPreKeyPublic(), this.getPreKeySignature(), otpk);
-    }
-
     public void export() throws NoSuchAlgorithmException, IOException {
-        String fileName = Util.byteArrayToBigInteger(Util.hash(this.getIdentityPublicKey())).toString(16).substring(1, 11);
-        String data = Util.byteArrayToString(this.getIdentityPrivateKey()) + "\n" + Util.byteArrayToString(this.getPreKeyPrivate()) + "\n";
+        String fileName = Util.byteArrayToBigInteger(Util.hash(
+            this.getIdentityPublicKey())).toString(16).substring(1, 11);
+        String data = this.getUsername()
+            + "\n" + Util.byteArrayToString(this.getIdentityPrivateKey())
+            + "\n" + Util.byteArrayToString(this.getPreKeyPrivate());
         Util.writeToFile(fileName, ".id", data, 0);
     }
 }
