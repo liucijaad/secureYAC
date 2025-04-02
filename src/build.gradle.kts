@@ -25,8 +25,8 @@ tasks.withType<JavaCompile> {
 }
 
 application {
-    mainModule.set("ie.dcu.secureyac")
-    mainClass.set("ie.dcu.secureyac.UI")
+    mainModule.set("ie.dcu.secureYAC")
+    mainClass.set("ie.dcu.secureYAC.UI")
 }
 
 javafx {
