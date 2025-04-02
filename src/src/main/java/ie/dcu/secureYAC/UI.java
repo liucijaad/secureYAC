@@ -689,36 +689,60 @@ public class UI extends Application {
         VBox messageContainer = new VBox(2);
         messageContainer.setPadding(new Insets(5));
 
+        // Message label
         Label senderLabel = new Label(isUser ? "You" : sender);
-        senderLabel.setStyle("-fx-text-fill: grey; -fx-font-size: 12px;");
+        senderLabel.setStyle("-fx-text-fill: #666666; -fx-font-size: 12px; -fx-font-weight: bold;");
 
+        // Text content
         Text messageText = new Text(text);
         messageText.setStyle("-fx-font-size: 14px;");
 
+        // Timestamp
         Label timestampLabel = new Label(timestamp);
-        timestampLabel.setStyle("-fx-text-fill: grey; -fx-font-size: 10px;");
+        timestampLabel.setStyle("-fx-text-fill: #999999; -fx-font-size: 10px;");
 
+        // Message bubble
         TextFlow messageBubble = new TextFlow(messageText);
-        messageBubble.setMaxWidth(250);
-        messageBubble.setPadding(new Insets(10));
-        messageBubble.setStyle("-fx-background-radius: 10;");
+        messageBubble.setPadding(new Insets(12, 15, 12, 15));
 
         if (isUser) {
-            messageBubble.setStyle("-fx-background-color: #0084ff; -fx-text-fill: white; -fx-background-radius: 10;");
+            // User messages
+            messageBubble.setStyle(
+                    "-fx-background-color: #4DA6FF; " +
+                            "-fx-background-radius: 18 18 0 18; " + // Rounded corners with one sharp corner
+                            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 1, 1, 0, 1);"
+            );
             messageText.setFill(javafx.scene.paint.Color.WHITE);
             messageContainer.setAlignment(Pos.CENTER_RIGHT);
+            timestampLabel.setAlignment(Pos.CENTER_RIGHT);
+            VBox.setMargin(timestampLabel, new Insets(0, 5, 0, 0));
         } else if ("SYSTEM".equals(sender)) {
-            // System messages (like file transfers) have a different style
-            messageBubble.setStyle("-fx-background-color: #f0f0f0; -fx-text-fill: black; -fx-background-radius: 10;");
-            messageText.setFill(javafx.scene.paint.Color.GRAY);
+            // System messages
+            messageBubble.setStyle(
+                    "-fx-background-color: #F0F2F5; " +
+                            "-fx-background-radius: 18; " +
+                            "-fx-border-color: #E4E6EB; " +
+                            "-fx-border-radius: 18; " +
+                            "-fx-border-width: 1px;"
+            );
+            messageText.setFill(javafx.scene.paint.Color.web("#666666"));
             messageContainer.setAlignment(Pos.CENTER);
+            senderLabel.setText(""); // No sender for system messages
         } else {
-            messageBubble.setStyle("-fx-background-color: #e0e0e0; -fx-text-fill: black; -fx-background-radius: 10;");
-            messageText.setFill(javafx.scene.paint.Color.BLACK);
+            // Others' messages
+            messageBubble.setStyle(
+                    "-fx-background-color: #E4E6EB; " +
+                            "-fx-background-radius: 18 18 18 0; " + // Rounded corners with one sharp corner
+                            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 1, 1, 0, 1);"
+            );
+            messageText.setFill(javafx.scene.paint.Color.web("#333333"));
             messageContainer.setAlignment(Pos.CENTER_LEFT);
         }
 
-        // Add message and timestamp
+        // Set max width but allow breaking for long messages
+        messageBubble.setMaxWidth(300);
+
+        // Add components to the message container
         if ("SYSTEM".equals(sender)) {
             messageContainer.getChildren().addAll(messageBubble, timestampLabel);
         } else {
