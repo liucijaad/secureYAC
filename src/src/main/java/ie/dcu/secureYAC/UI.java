@@ -9,6 +9,8 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.FileChooser;
@@ -47,6 +49,8 @@ public class UI extends Application {
     private FileTransferManager fileTransferManager;
     private ExecutorService executorService;
     private Stage primaryStage;
+    private HashMap<String, Integer> unreadMessages;
+    private HashMap<String, StackPane> unreadIndicators;
 
     // Map of peer addresses to sockets to track active connections
     private HashMap<String, PeerThread> activePeers = new HashMap<>();
@@ -266,10 +270,23 @@ public class UI extends Application {
                 if (!messageHistory.containsKey(sender)) {
                     addContact(sender, msgContent,
                             "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png");
+
+                    // Initialise unread counter for new contact if not current chat
+                    if (currentChat == null || !currentChat.equals(sender)) {
+                        unreadMessages.put(sender, 1);
+                        updateUnreadIndicator(sender);
+                    }
                 } else {
                     // Update the last message
                     messageHistory.get(sender).add(new String[]{sender, msgContent, timestamp});
                     updateLastMessage(sender, msgContent);
+
+                    // Increment unread counter if this isn't the current chat
+                    if (currentChat == null || !currentChat.equals(sender)) {
+                        int unread = unreadMessages.getOrDefault(sender, 0) + 1;
+                        unreadMessages.put(sender, unread);
+                        updateUnreadIndicator(sender);
+                    }
 
                     // If this is the current chat, update the chat box
                     if (currentChat != null && currentChat.equals(sender)) {
@@ -280,6 +297,57 @@ public class UI extends Application {
                 System.err.println("Error processing incoming message: " + e.getMessage());
             }
         });
+    }
+    
+    private void updateUnreadIndicator(String contactName) {
+        int unread = unreadMessages.getOrDefault(contactName, 0);
+
+        // Get or create the indicator for this contact
+        StackPane indicator = unreadIndicators.get(contactName);
+
+        if (indicator == null && unread > 0) {
+            // Need to create a new indicator
+            createUnreadIndicator(contactName, unread);
+        } else if (indicator != null) {
+            // Update existing indicator
+            if (unread > 0) {
+                // Update the count
+                Label countLabel = (Label) indicator.getChildren().get(1);
+                countLabel.setText(String.valueOf(unread));
+                indicator.setVisible(true);
+            } else {
+                // Hide the indicator when count is 0
+                indicator.setVisible(false);
+            }
+        }
+    }
+
+    // Create an unread message indicator for a contact
+    private void createUnreadIndicator(String contactName, int count) {
+        HBox contactBox = contactBoxes.get(contactName);
+        if (contactBox != null) {
+            // Create indicator components
+            Circle circle = new Circle(10);
+            circle.setFill(Color.web("#FF3B30"));
+
+            Label countLabel = new Label(String.valueOf(count));
+            countLabel.setTextFill(Color.WHITE);
+            countLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 10px;");
+
+            // Create stack pane to overlay text on circle
+            StackPane indicator = new StackPane();
+            indicator.getChildren().addAll(circle, countLabel);
+            indicator.setAlignment(Pos.CENTER);
+
+            // Add the indicator to the contact box
+            Region spacer = new Region();
+            HBox.setHgrow(spacer, Priority.ALWAYS);
+            contactBox.getChildren().add(spacer);
+            contactBox.getChildren().add(indicator);
+
+            // Store reference to the indicator
+            unreadIndicators.put(contactName, indicator);
+        }
     }
 
     private void handleFileReceived(String message) {
@@ -417,6 +485,8 @@ public class UI extends Application {
         messageHistory = new HashMap<>();
         contactBoxes = new HashMap<>();
         lastMessageLabels = new HashMap<>();
+        unreadMessages = new HashMap<>();
+        unreadIndicators = new HashMap<>();
 
         // Left sidebar with contacts list
         BorderPane contactsPane = new BorderPane();
@@ -499,7 +569,7 @@ public class UI extends Application {
         topBarUsername = new Label("Select a Contact");
         topBarUsername.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
 
-// User status label (showing current username)
+        // User status label (showing current username)
         Label userStatusLabel = new Label("Logged in as: " + username);
         userStatusLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: grey;");
 
@@ -775,6 +845,17 @@ public class UI extends Application {
         contactBoxes.put(name, contactBox);
         lastMessageLabels.put(name, lastMessageLabel);
 
+        // Initialise unread messages counter if not already set
+        if (!unreadMessages.containsKey(name)) {
+            unreadMessages.put(name, 0);
+        }
+
+        // Create unread indicator if needed
+        int unread = unreadMessages.getOrDefault(name, 0);
+        if (unread > 0) {
+            createUnreadIndicator(name, unread);
+        }
+
         // Add hover effect
         contactBox.setOnMouseEntered(event -> contactBox.setStyle("-fx-background-color: #d0d0d0; -fx-border-color: #d0d0d0; -fx-background-radius: 5; -fx-border-radius: 5;"));
         contactBox.setOnMouseExited(event -> contactBox.setStyle("-fx-background-color: #ffffff; -fx-border-color: #d0d0d0; -fx-background-radius: 5; -fx-border-radius: 5;"));
@@ -793,6 +874,10 @@ public class UI extends Application {
         }
 
         contactBox.setOnMouseClicked(event -> {
+            // Reset unread counter when chat is opened
+            unreadMessages.put(name, 0);
+            updateUnreadIndicator(name);
+
             currentChat = name;
             updateChatBox(name);
             updateTopBar(name, imageUrl);
