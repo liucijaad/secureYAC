@@ -21,6 +21,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -37,8 +41,11 @@ public class UI extends Application {
     private HashMap<String, List<String[]>> messageHistory;
     private HashMap<String, HBox> contactBoxes;
     private HashMap<String, Label> lastMessageLabels;
+    private HashMap<String, Integer> unreadMessages;
+    private HashMap<String, StackPane> unreadIndicators;
     private String currentChat;
     private ImageView topBarProfileImage;
+    private ImageView userProfileImageView;
     private Label topBarUsername;
     private boolean contactsVisible = true;
     private SplitPane splitPane;
@@ -49,8 +56,12 @@ public class UI extends Application {
     private FileTransferManager fileTransferManager;
     private ExecutorService executorService;
     private Stage primaryStage;
-    private HashMap<String, Integer> unreadMessages;
-    private HashMap<String, StackPane> unreadIndicators;
+    private String userProfileImagePath = null;
+    private String appDataDirectory;
+
+    // Default profile image URL
+    private static final String DEFAULT_PROFILE_IMAGE = "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";
+
 
     // Map of peer addresses to sockets to track active connections
     private HashMap<String, PeerThread> activePeers = new HashMap<>();
@@ -67,32 +78,90 @@ public class UI extends Application {
         fileTransferManager.setOnFileReceived(this::handleFileReceived);
         fileTransferManager.setOnTransferProgress(this::handleTransferProgress);
 
+        setupAppDataDirectory();
+
         showLoginDialog(primaryStage);
     }
 
+    // Set up the application data directory to store user profile images
+    private void setupAppDataDirectory() {
+        appDataDirectory = System.getProperty("user.home") + File.separator + ".SecureYAC";
+        try {
+            Path appDataPath = Paths.get(appDataDirectory);
+            if (!Files.exists(appDataPath)) {
+                Files.createDirectories(appDataPath);
+            }
+
+            // Create profile images directory
+            Path profileImagesPath = Paths.get(appDataDirectory, "ProfileImages");
+            if (!Files.exists(profileImagesPath)) {
+                Files.createDirectories(profileImagesPath);
+            }
+        } catch (IOException e) {
+            System.err.println("Could not create app data directory: " + e.getMessage());
+        }
+    }
+
     private void showLoginDialog(Stage primaryStage) {
-        // Create dialog for username only
-        Dialog<String> dialog = new Dialog<>();
+        // Create dialog for username and profile picture
+        Dialog<LoginData> dialog = new Dialog<>();
         dialog.setTitle("SecureYAC Login");
-        dialog.setHeaderText("Enter your username");
+        dialog.setHeaderText("Welcome to SecureYAC");
 
         // Set the button types
         ButtonType loginButtonType = new ButtonType("Login", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(loginButtonType, ButtonType.CANCEL);
 
-        // Create the username field
+        // Create the username and profile picture fields
         GridPane grid = new GridPane();
         grid.setHgap(10);
-        grid.setVgap(10);
+        grid.setVgap(15);
         grid.setPadding(new Insets(20, 150, 10, 10));
 
         TextField usernameField = new TextField();
         usernameField.setPromptText("Username");
 
+        // Profile picture selection
+        ImageView profileImageView = new ImageView(new Image(DEFAULT_PROFILE_IMAGE));
+        profileImageView.setFitWidth(100);
+        profileImageView.setFitHeight(100);
+
+        // Make the ImageView circular
+        Circle clip = new Circle(50, 50, 50);
+        profileImageView.setClip(clip);
+
+        Button chooseImageButton = new Button("Choose Profile Picture");
+
+        // File path for the selected image
+        final File[] selectedImageFile = new File[1];
+
+        chooseImageButton.setOnAction(e -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Select Profile Picture");
+            fileChooser.getExtensionFilters().add(
+                    new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg", "*.gif")
+            );
+
+            File file = fileChooser.showOpenDialog(dialog.getOwner());
+            if (file != null) {
+                selectedImageFile[0] = file;
+                // Load and display the selected image
+                Image image = new Image(file.toURI().toString());
+                profileImageView.setImage(image);
+            }
+        });
+
+        VBox imageContainer = new VBox(10);
+        imageContainer.setAlignment(Pos.CENTER);
+        imageContainer.getChildren().addAll(profileImageView, chooseImageButton);
+
         grid.add(new Label("Username:"), 0, 0);
         grid.add(usernameField, 1, 0);
+        grid.add(new Label("Profile Picture:"), 0, 1);
+        grid.add(imageContainer, 1, 1);
 
         dialog.getDialogPane().setContent(grid);
+        dialog.getDialogPane().setPrefSize(400, 300);
 
         // Request focus on the username field by default
         Platform.runLater(usernameField::requestFocus);
@@ -100,16 +169,30 @@ public class UI extends Application {
         // Convert the result when the login button is clicked
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == loginButtonType) {
-                return usernameField.getText();
+                return new LoginData(usernameField.getText(), selectedImageFile[0]);
             }
             return null;
         });
 
-        Optional<String> result = dialog.showAndWait();
+        Optional<LoginData> result = dialog.showAndWait();
 
-        result.ifPresent(username -> {
-            if (!username.isEmpty()) {
-                this.username = username;
+        result.ifPresent(loginData -> {
+            if (!loginData.username.isEmpty()) {
+                this.username = loginData.username;
+
+                // Handle profile image
+                if (loginData.profileImageFile != null) {
+                    try {
+                        // Copy profile image to app data directory
+                        String profileImageName = username + "_profile" + getFileExtension(loginData.profileImageFile.getName());
+                        Path destination = Paths.get(appDataDirectory, "ProfileImages", profileImageName);
+                        Files.copy(loginData.profileImageFile.toPath(), destination, StandardCopyOption.REPLACE_EXISTING);
+                        userProfileImagePath = destination.toString();
+                    } catch (IOException e) {
+                        System.err.println("Could not save profile image: " + e.getMessage());
+                        userProfileImagePath = null;
+                    }
+                }
 
                 // Find an available port automatically
                 if (findAvailablePort()) {
@@ -134,6 +217,26 @@ public class UI extends Application {
                 }
             }
         });
+    }
+
+    // Helper class to store login data
+    private static class LoginData {
+        String username;
+        File profileImageFile;
+
+        public LoginData(String username, File profileImageFile) {
+            this.username = username;
+            this.profileImageFile = profileImageFile;
+        }
+    }
+
+    // Helper method to get file extension
+    private String getFileExtension(String filename) {
+        int lastDotIndex = filename.lastIndexOf('.');
+        if (lastDotIndex > 0) {
+            return filename.substring(lastDotIndex);
+        }
+        return ".png"; // Default extension
     }
 
     private boolean findAvailablePort() {
@@ -523,9 +626,20 @@ public class UI extends Application {
         userProfileArea.setStyle("-fx-background-color: #d0d0d0; -fx-background-radius: 5;");
 
         // User profile image
-        ImageView userProfileImage = new ImageView(new Image("https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"));
-        userProfileImage.setFitWidth(40);
-        userProfileImage.setFitHeight(40);
+        userProfileImageView = new ImageView();
+        userProfileImageView.setFitWidth(40);
+        userProfileImageView.setFitHeight(40);
+
+        // Make the profile image circular
+        Circle profileClip = new Circle(20, 20, 20);
+        userProfileImageView.setClip(profileClip);
+
+        // Set the profile image
+        if (userProfileImagePath != null) {
+            userProfileImageView.setImage(new Image("file:" + userProfileImagePath));
+        } else {
+            userProfileImageView.setImage(new Image(DEFAULT_PROFILE_IMAGE));
+        }
 
         // User info
         VBox userInfo = new VBox(2);
@@ -540,11 +654,16 @@ public class UI extends Application {
         settingsButton.setStyle("-fx-font-size: 18px; -fx-background-color: transparent;");
         settingsButton.setOnAction(e -> showPeerConnectionDialog());
 
+        // Change profile picture button
+        Button changeProfileButton = new Button("📷");
+        changeProfileButton.setStyle("-fx-font-size: 18px; -fx-background-color: transparent;");
+        changeProfileButton.setOnAction(e -> changeProfilePicture());
+
         // Add spacing to push settings button to the right
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        userProfileArea.getChildren().addAll(userProfileImage, userInfo, spacer, settingsButton);
+        userProfileArea.getChildren().addAll(userProfileImageView, userInfo, spacer, changeProfileButton, settingsButton);
         contactsPane.setBottom(userProfileArea);
 
         contactsScroll = new ScrollPane(contactsPane);
@@ -563,9 +682,14 @@ public class UI extends Application {
         menuButton.setStyle("-fx-font-size: 18px; -fx-background-color: transparent;");
         menuButton.setOnAction(e -> toggleContacts());
 
-        topBarProfileImage = new ImageView(new Image("https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"));
+        topBarProfileImage = new ImageView(new Image(DEFAULT_PROFILE_IMAGE));
         topBarProfileImage.setFitWidth(50);
         topBarProfileImage.setFitHeight(50);
+
+        // Make the top bar profile image circular
+        Circle topBarClip = new Circle(25, 25, 25);
+        topBarProfileImage.setClip(topBarClip);
+
         topBarUsername = new Label("Select a Contact");
         topBarUsername.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
 
@@ -640,6 +764,32 @@ public class UI extends Application {
             executorService.shutdown();
             System.exit(0);
         });
+    }
+
+    // Method to change profile picture
+    private void changeProfilePicture() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Select New Profile Picture");
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg", "*.gif")
+        );
+
+        File file = fileChooser.showOpenDialog(primaryStage);
+        if (file != null) {
+            try {
+                // Copy profile image to app data directory
+                String profileImageName = username + "_profile" + getFileExtension(file.getName());
+                Path destination = Paths.get(appDataDirectory, "ProfileImages", profileImageName);
+                Files.copy(file.toPath(), destination, StandardCopyOption.REPLACE_EXISTING);
+                userProfileImagePath = destination.toString();
+
+                // Update profile image in UI
+                Image newImage = new Image("file:" + userProfileImagePath);
+                userProfileImageView.setImage(newImage);
+            } catch (IOException e) {
+                showErrorAlert("Error", "Could not save profile image", e.getMessage());
+            }
+        }
     }
 
     private void sendFile() {
