@@ -4,6 +4,7 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -103,120 +104,190 @@ public class UI extends Application {
     }
 
     private void showLoginDialog(Stage primaryStage) {
-        // Create dialog for username and profile picture
-        Dialog<LoginData> dialog = new Dialog<>();
-        dialog.setTitle("SecureYAC Login");
-        dialog.setHeaderText("Welcome to SecureYAC");
+        Stage dialogStage = new Stage();
+        dialogStage.initOwner(primaryStage);
+        dialogStage.setTitle("Welcome to SecureYAC");
+        dialogStage.setResizable(false);
 
-        // Set the button types
-        ButtonType loginButtonType = new ButtonType("Login", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(loginButtonType, ButtonType.CANCEL);
+        // Create the main container
+        VBox mainContainer = new VBox(20);
+        mainContainer.setPadding(new Insets(30));
+        mainContainer.setAlignment(Pos.CENTER);
+        mainContainer.setStyle("-fx-background-color: linear-gradient(to bottom, #f5f7fa, #e4e7eb);");
 
-        // Create the username and profile picture fields
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(15);
-        grid.setPadding(new Insets(20, 150, 10, 10));
+        Label appTitle = new Label("SecureYAC");
+        appTitle.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #3498db;");
 
-        TextField usernameField = new TextField();
-        usernameField.setPromptText("Username");
+        Label subTitle = new Label("The Most Secure Chat");
+        subTitle.setStyle("-fx-font-size: 14px; -fx-text-fill: #7f8c8d; -fx-padding: 0 0 20 0;");
+
+        // Profile picture container
+        StackPane imageContainer = new StackPane();
+        imageContainer.setStyle("-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 2);");
 
         // Profile picture selection
         ImageView profileImageView = new ImageView(new Image(DEFAULT_PROFILE_IMAGE));
-        profileImageView.setFitWidth(100);
-        profileImageView.setFitHeight(100);
+        profileImageView.setFitWidth(120);
+        profileImageView.setFitHeight(120);
 
         // Make the ImageView circular
-        Circle clip = new Circle(50, 50, 50);
+        Circle clip = new Circle(60, 60, 60);
         profileImageView.setClip(clip);
 
-        Button chooseImageButton = new Button("Choose Profile Picture");
+        // Border around the image
+        Circle border = new Circle(61, 61, 61);
+        border.setFill(Color.TRANSPARENT);
+        border.setStroke(Color.web("#3498db"));
+        border.setStrokeWidth(2);
+
+        imageContainer.getChildren().addAll(profileImageView, border);
+
+        // Camera overlay for image selection
+        StackPane cameraOverlay = new StackPane();
+        Circle cameraCircle = new Circle(25);
+        cameraCircle.setFill(Color.web("#3498db"));
+        Label cameraIcon = new Label("📷");
+        cameraIcon.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
+        cameraOverlay.getChildren().addAll(cameraCircle, cameraIcon);
+        cameraOverlay.setTranslateX(40);
+        cameraOverlay.setTranslateY(40);
+        cameraOverlay.setPickOnBounds(false);
+        cameraOverlay.setCursor(Cursor.HAND);
+
+        StackPane profilePictureStack = new StackPane();
+        profilePictureStack.getChildren().addAll(imageContainer, cameraOverlay);
 
         // File path for the selected image
         final File[] selectedImageFile = new File[1];
 
-        chooseImageButton.setOnAction(e -> {
+        cameraOverlay.setOnMouseClicked(e -> {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Select Profile Picture");
             fileChooser.getExtensionFilters().add(
                     new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg", "*.gif")
             );
 
-            File file = fileChooser.showOpenDialog(dialog.getOwner());
+            File file = fileChooser.showOpenDialog(dialogStage);
             if (file != null) {
                 selectedImageFile[0] = file;
                 // Load and display the selected image
-                Image image = new Image(file.toURI().toString());
+                Image image = new Image(file.toURI().toString(), 120, 120, true, true);
                 profileImageView.setImage(image);
             }
         });
 
-        VBox imageContainer = new VBox(10);
-        imageContainer.setAlignment(Pos.CENTER);
-        imageContainer.getChildren().addAll(profileImageView, chooseImageButton);
+        TextField usernameField = new TextField();
+        usernameField.setPromptText("Enter your username");
+        usernameField.setPrefHeight(40);
+        usernameField.setMaxWidth(300);
+        usernameField.setStyle("-fx-background-radius: 20; -fx-font-size: 14px; -fx-padding: 10;" +
+                "-fx-border-color: #3498db; -fx-border-radius: 20; -fx-border-width: 2px;");
 
-        grid.add(new Label("Username:"), 0, 0);
-        grid.add(usernameField, 1, 0);
-        grid.add(new Label("Profile Picture:"), 0, 1);
-        grid.add(imageContainer, 1, 1);
+        Button loginButton = new Button("Start Chatting");
+        loginButton.setPrefHeight(40);
+        loginButton.setPrefWidth(300);
+        loginButton.setStyle(
+                "-fx-background-color: linear-gradient(to right, #3498db, #2980b9); " +
+                        "-fx-text-fill: white; " +
+                        "-fx-font-size: 14px; " +
+                        "-fx-background-radius: 20; " +
+                        "-fx-cursor: hand;"
+        );
 
-        dialog.getDialogPane().setContent(grid);
-        dialog.getDialogPane().setPrefSize(400, 300);
+        // Hover effect for login button
+        loginButton.setOnMouseEntered(e ->
+                loginButton.setStyle(
+                        "-fx-background-color: linear-gradient(to right, #2980b9, #3498db); " +
+                                "-fx-text-fill: white; " +
+                                "-fx-font-size: 14px; " +
+                                "-fx-background-radius: 20; " +
+                                "-fx-cursor: hand;"
+                )
+        );
 
-        // Request focus on the username field by default
-        Platform.runLater(usernameField::requestFocus);
+        loginButton.setOnMouseExited(e ->
+                loginButton.setStyle(
+                        "-fx-background-color: linear-gradient(to right, #3498db, #2980b9); " +
+                                "-fx-text-fill: white; " +
+                                "-fx-font-size: 14px; " +
+                                "-fx-background-radius: 20; " +
+                                "-fx-cursor: hand;"
+                )
+        );
 
-        // Convert the result when the login button is clicked
-        dialog.setResultConverter(dialogButton -> {
-            if (dialogButton == loginButtonType) {
-                return new LoginData(usernameField.getText(), selectedImageFile[0]);
+        // Add everything to the main container
+        VBox titleBox = new VBox(5);
+        titleBox.setAlignment(Pos.CENTER);
+        titleBox.getChildren().addAll(appTitle, subTitle);
+
+        mainContainer.getChildren().addAll(
+                titleBox,
+                profilePictureStack,
+                new Label("Choose a username to identify yourself"),
+                usernameField,
+                loginButton
+        );
+
+        // Handle login button action
+        loginButton.setOnAction(e -> {
+            String enteredUsername = usernameField.getText().trim();
+            if (enteredUsername.isEmpty()) {
+                // Show error for empty username
+                usernameField.setStyle(
+                        "-fx-background-radius: 20; -fx-font-size: 14px; -fx-padding: 10; " +
+                                "-fx-border-color: #e74c3c; -fx-border-radius: 20; -fx-border-width: 2px;"
+                );
+                return;
             }
-            return null;
+
+            // Process login
+            username = enteredUsername;
+
+            // Handle profile image
+            if (selectedImageFile[0] != null) {
+                try {
+                    // Copy profile image to app data directory
+                    String profileImageName = username + "_profile" + getFileExtension(selectedImageFile[0].getName());
+                    Path destination = Paths.get(appDataDirectory, "ProfileImages", profileImageName);
+                    Files.copy(selectedImageFile[0].toPath(), destination, StandardCopyOption.REPLACE_EXISTING);
+                    userProfileImagePath = destination.toString();
+                } catch (IOException ex) {
+                    System.err.println("Could not save profile image: " + ex.getMessage());
+                    userProfileImagePath = null;
+                }
+            }
+
+            dialogStage.close();
+
+            // Continue with port finding and connecting
+            if (findAvailablePort()) {
+                try {
+                    // Start the server thread with the automatically assigned port
+                    serverThread = new ServerThread(String.valueOf(port));
+                    serverThread.setFileTransferHandler(fileTransferManager::handleIncomingFileTransfer);
+                    serverThread.start();
+
+                    // Now show the main UI
+                    initMainUI(primaryStage);
+
+                    // Show the peer connection dialog
+                    showPeerConnectionDialog();
+                } catch (IOException ex) {
+                    showErrorAlert("Error", "Could not start server on port " + port, ex.getMessage());
+                }
+            } else {
+                showErrorAlert("Error", "Could not find an available port",
+                        "Tried " + MAX_PORT_ATTEMPTS + " ports starting from " + NEXT_PORT.get() +
+                                " but none were available.");
+            }
         });
 
-        Optional<LoginData> result = dialog.showAndWait();
+        // Allow pressing Enter on the username field to login
+        usernameField.setOnAction(loginButton.getOnAction());
 
-        result.ifPresent(loginData -> {
-            if (!loginData.username.isEmpty()) {
-                this.username = loginData.username;
-
-                // Handle profile image
-                if (loginData.profileImageFile != null) {
-                    try {
-                        // Copy profile image to app data directory
-                        String profileImageName = username + "_profile" + getFileExtension(loginData.profileImageFile.getName());
-                        Path destination = Paths.get(appDataDirectory, "ProfileImages", profileImageName);
-                        Files.copy(loginData.profileImageFile.toPath(), destination, StandardCopyOption.REPLACE_EXISTING);
-                        userProfileImagePath = destination.toString();
-                    } catch (IOException e) {
-                        System.err.println("Could not save profile image: " + e.getMessage());
-                        userProfileImagePath = null;
-                    }
-                }
-
-                // Find an available port automatically
-                if (findAvailablePort()) {
-                    try {
-                        // Start the server thread with the automatically assigned port
-                        serverThread = new ServerThread(String.valueOf(port));
-                        serverThread.setFileTransferHandler(fileTransferManager::handleIncomingFileTransfer);
-                        serverThread.start();
-
-                        // Now show the main UI
-                        initMainUI(primaryStage);
-
-                        // Show the peer connection dialog
-                        showPeerConnectionDialog();
-                    } catch (IOException e) {
-                        showErrorAlert("Error", "Could not start server on port " + port, e.getMessage());
-                    }
-                } else {
-                    showErrorAlert("Error", "Could not find an available port",
-                            "Tried " + MAX_PORT_ATTEMPTS + " ports starting from " + NEXT_PORT.get() +
-                                    " but none were available.");
-                }
-            }
-        });
+        Scene dialogScene = new Scene(mainContainer, 400, 500);
+        dialogStage.setScene(dialogScene);
+        dialogStage.showAndWait();
     }
 
     // Helper class to store login data
