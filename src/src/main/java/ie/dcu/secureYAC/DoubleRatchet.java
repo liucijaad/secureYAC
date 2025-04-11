@@ -2,6 +2,8 @@ package ie.dcu.secureYAC;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
+import ie.dcu.secureYAC.Message.MessageType;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
@@ -141,7 +143,7 @@ public class DoubleRatchet {
         return Util.HKDF(messageKey, salt, "SecureYAC-AES");
     }
 
-    public Message ratchetEncrypt(byte[] plaintext) throws Exception {
+    public Message ratchetEncrypt(byte[] plaintext, MessageType type) throws Exception {
         this.sendingChainKey = this.KDFChainKey(CK_CONSTANT, this.sendingChainKey);
         byte[] messageKey = this.KDFChainKey(MK_CONSTANT, this.sendingChainKey);
         byte[] hkdfOut = this.AESHKDF(messageKey);
@@ -149,7 +151,7 @@ public class DoubleRatchet {
         byte[] iv = java.util.Arrays.copyOfRange(hkdfOut, 32, 48);
         this.sendingMessageNo += 1;
         byte[] AD = Util.HMAC(plaintext, authenticationKey);
-        return new Message(this.header(), AD,
+        return new Message(type, this.header(), AD,
                 AES(Cipher.ENCRYPT_MODE, messageKey, iv, plaintext));
     }
 

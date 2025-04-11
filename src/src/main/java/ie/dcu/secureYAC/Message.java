@@ -15,8 +15,15 @@ public class Message {
     private byte[] key;
     private Integer currentMessageNo;
     private Integer prevMessageNo;
+    private MessageType type;
 
-    Message(byte[] header, byte[] AD, byte[] ciphertext) {
+    enum MessageType {
+        TEXT,
+        FILE
+    }
+
+    Message(MessageType type, byte[] header, byte[] AD, byte[] ciphertext) {
+        this.type = type;
         this.header = header;
         this.AD = AD;
         this.ciphertext = ciphertext;
@@ -36,6 +43,10 @@ public class Message {
 
     public Integer getPrevMessageNo() {
         return this.prevMessageNo;
+    }
+
+    public MessageType getMessageType() {
+        return this.type;
     }
 
     void extractHeader() {

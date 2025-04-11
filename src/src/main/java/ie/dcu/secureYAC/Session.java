@@ -3,6 +3,8 @@ package ie.dcu.secureYAC;
 import java.security.SecureRandom;
 import java.util.Random;
 
+import ie.dcu.secureYAC.Message.MessageType;
+
 /**
  *
     This class represents an open messaging session between users.
@@ -43,9 +45,19 @@ public class Session {
         this.sessionName = sessionName;
     }
 
-    public void sendMessage() {
+    public Message sendTextMessage(String data) throws Exception {
+        return this.DR.ratchetEncrypt(data.getBytes(), MessageType.TEXT);
     }
 
-    public void receiveMessage() {
+    public Message sendFile(byte[] data) throws Exception {
+        return this.DR.ratchetEncrypt(data, MessageType.FILE);
+    }
+
+    public String receiveTextMessage(Message message) throws Exception {
+        return new String(this.DR.ratchetDecrypt(message), "UTF-8");
+    }
+
+    public byte[] receiveFileMessage(Message message) throws Exception {
+        return this.DR.ratchetDecrypt(message);
     }
 }
