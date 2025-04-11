@@ -1,33 +1,51 @@
 package ie.dcu.secureYAC;
 
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Random;
 
-public class Session {
+/**
+ *
+    This class represents an open messaging session between users.
+    Used for a high-level integration of cryptographic algorithms,
+    storing user connection data, and exchange of
+    {@link ie.dcu.secureYAC.Message Messages}.
+ *
+ * @author Liucija Paulina Adomaviciute
+ */
 
+public class Session {
     private int sessionID;
     private String sessionName;
     private User user;
-    X3DH X3DH;
-    DoubleRatchet DR;
+    final X3DH X3DH;
+    final DoubleRatchet DR;
 
-    public Session(User user, PreKeyBundle targetUser, Boolean receiving)
-        throws NoSuchAlgorithmException {
+    Session(User user, PreKeyBundle targetUser, Boolean receiving)
+            throws Exception {
         Random random = new SecureRandom();
         this.sessionID = random.nextInt();
         this.sessionName = targetUser.getUsername();
         this.user = user;
         this.X3DH = new X3DH(this.user, targetUser, receiving);
-        this.DR = new DoubleRatchet(this.user.getIdentityKeyBundle(), targetUser, X3DH.getSharedSecretValue());
+        this.DR = new DoubleRatchet(this.user.getIdentityKeyBundle(), targetUser,
+                X3DH.getSharedSecretValue());
     }
 
-    public int getSessionID() { return this.sessionID; }
-    public String getSessionName() { return this.sessionName; }
+    public int getSessionID() {
+        return this.sessionID;
+    }
 
-    public void setSessionName(String sessionName) { this.sessionName = sessionName; }
+    public String getSessionName() {
+        return this.sessionName;
+    }
 
-    public void sendMessage() {}
-    
-    public void receiveMessage() {}
+    public void setSessionName(String sessionName) {
+        this.sessionName = sessionName;
+    }
+
+    public void sendMessage() {
+    }
+
+    public void receiveMessage() {
+    }
 }

@@ -3,16 +3,16 @@ package ie.dcu.secureYAC;
 import java.security.NoSuchAlgorithmException;
 
 /**
-*
+ *
     This class represents the X3DH key agreement protocol.
     Implementation based on specification and references in
     <a href="https://signal.org/docs/specifications/x3dh/">
     The X3DH Key Agreement Protocol</a>.
-*
-* @author Liucija Paulina Adomaviciute */
+ *
+ * @author Liucija Paulina Adomaviciute
+ */
 
 public class X3DH {
-
     private IdentityKeyBundle identity;
     private PreKeyBundle preKeyBundle;
     private byte[] ephemeralPrivateKey;
@@ -20,10 +20,13 @@ public class X3DH {
     private byte[] sharedSecretValue;
 
     X3DH(User user, PreKeyBundle preKeyBundle, Boolean received)
-        throws NoSuchAlgorithmException {
+            throws Exception {
+        if (!XEdDSA.verify(preKeyBundle)) {
+            throw new Exception("Invalid pre-key signature.");
+        }
         this.identity = user.getIdentityKeyBundle();
         this.preKeyBundle = preKeyBundle;
-        if(!received) {
+        if (!received) {
             this.generateEphemeralKeys();
         } else {
             this.ephemeralPrivateKey = identity.getPreKeyPrivate();
@@ -32,9 +35,17 @@ public class X3DH {
         this.calculateSharedSecret();
     }
 
-    public byte[] getEphemeralPrivateKey() { return this.ephemeralPrivateKey; }
-    public byte[] getEphemeralPublicKey() { return this.ephemeralPublicKey; }
-    public byte[] getSharedSecretValue() { return this.sharedSecretValue; }
+    public byte[] getEphemeralPrivateKey() {
+        return this.ephemeralPrivateKey;
+    }
+
+    public byte[] getEphemeralPublicKey() {
+        return this.ephemeralPublicKey;
+    }
+
+    public byte[] getSharedSecretValue() {
+        return this.sharedSecretValue;
+    }
 
     private void generateEphemeralKeys() {
         this.ephemeralPrivateKey = X25519.generatePrivateKey();
@@ -42,13 +53,14 @@ public class X3DH {
     }
 
     private static byte[] DH(byte[] keyOne, byte[] keyTwo) {
-        return Util.bigIntToByteArray(Util.byteArrayToBigInteger(keyOne)
-            .multiply(Util.byteArrayToBigInteger(keyTwo)), 512);
+        return Util.bigIntToByteArray(Util.byteArrayToBigInteger(keyOne).multiply(
+                Util.byteArrayToBigInteger(keyTwo)),
+                512);
     }
 
     private byte[] HKDF(byte[] concatValues) throws NoSuchAlgorithmException {
         byte[] inputBytes = new byte[concatValues.length];
-        for(int i = 0; i < 32; i++) {
+        for (int i = 0; i < 32; i++) {
             inputBytes[i] = (byte) 0xFF;
         }
         byte[] keyInputMaterial = Util.concatByteArrays(concatValues, inputBytes);
@@ -56,25 +68,26 @@ public class X3DH {
     }
 
     public void calculateSharedSecret() throws NoSuchAlgorithmException {
-        byte[] firstValue = X3DH.DH(this.identity.getIdentityPublicKey(), this.preKeyBundle.getPreKeyPublic());
-        byte[] secondValue = X3DH.DH(this.ephemeralPublicKey, this.preKeyBundle.getIdentityPublicKey());
-        byte[] thirdValue = X3DH.DH(this.ephemeralPublicKey, this.preKeyBundle.getPreKeyPublic());
+        byte[] firstValue = X3DH.DH(this.identity.getIdentityPublicKey(),
+                this.preKeyBundle.getPreKeyPublic());
+        byte[] secondValue = X3DH.DH(
+                this.ephemeralPublicKey, this.preKeyBundle.getIdentityPublicKey());
+        byte[] thirdValue = X3DH.DH(
+                this.ephemeralPublicKey, this.preKeyBundle.getPreKeyPublic());
         byte[] fourthValue = null;
         byte[] concatValues = null;
-        byte[] OTPK = this.preKeyBundle.getOneTimePreKey(); 
-        if(identity.containsOTPK(OTPK)) {
+        byte[] OTPK = this.preKeyBundle.getOneTimePreKey();
+        if (identity.containsOTPK(OTPK)) {
             fourthValue = X3DH.DH(this.preKeyBundle.getPreKeyPublic(), OTPK);
             concatValues = Util.concatByteArrays(
-                Util.concatByteArrays(fourthValue, thirdValue),
-                Util.concatByteArrays(secondValue, firstValue));
-        }
-        else {
+                    Util.concatByteArrays(fourthValue, thirdValue),
+                    Util.concatByteArrays(secondValue, firstValue));
+        } else {
             fourthValue = X3DH.DH(this.ephemeralPublicKey, OTPK);
             concatValues = Util.concatByteArrays(
-                Util.concatByteArrays(fourthValue, thirdValue),
-                Util.concatByteArrays(firstValue, secondValue));
+                    Util.concatByteArrays(fourthValue, thirdValue),
+                    Util.concatByteArrays(firstValue, secondValue));
         }
         this.sharedSecretValue = this.HKDF(concatValues);
     }
 }
-

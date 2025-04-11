@@ -3,19 +3,18 @@ package ie.dcu.secureYAC;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.File;
-
 import org.junit.jupiter.api.Test;
 
-public class PreKeyBundleTest {
+import java.io.File;
 
+public class PreKeyBundleTest {
     @Test
     public void testExport() throws Exception {
         User test = new User("test", 50);
         PreKeyBundle prekey = test.getPreKeyBundle();
         prekey.export();
-        for(File f : new File(".").listFiles()) {
-            if(f.getName().endsWith(".pkb")) {
+        for (File f : new File(".").listFiles()) {
+            if (f.getName().endsWith(".pkb")) {
                 f.delete();
                 return;
             }
@@ -27,12 +26,12 @@ public class PreKeyBundleTest {
     public void testMultiExport() throws Exception {
         User test = new User("test", 50);
         PreKeyBundle prekey = test.getPreKeyBundle();
-        for(int i = 10; i !=0; i--) {
+        for (int i = 10; i != 0; i--) {
             prekey.export();
         }
         int counter = 0;
-        for(File f : new File(".").listFiles()) {
-            if(f.getName().endsWith(".pkb")) {
+        for (File f : new File(".").listFiles()) {
+            if (f.getName().endsWith(".pkb")) {
                 counter += 1;
                 f.delete();
             }

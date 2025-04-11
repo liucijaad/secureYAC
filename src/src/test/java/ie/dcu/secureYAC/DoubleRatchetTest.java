@@ -1,14 +1,15 @@
 package ie.dcu.secureYAC;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+
+import org.junit.jupiter.api.Test;
+
 import java.security.SecureRandom;
 import java.util.Random;
 
 import javax.crypto.Cipher;
 
-import org.junit.jupiter.api.Test;
-
 public class DoubleRatchetTest {
-
     @Test
     public void testEncryptAndDecrypt() throws Exception {
         Random random = new SecureRandom();
@@ -22,7 +23,7 @@ public class DoubleRatchetTest {
         PreKeyBundle aliceBundle = User.createInitPreKeyBundle(alice, aliceSession, bobPreKey);
         Session bobSession = new Session(bob, aliceBundle, true);
         byte[] decrypted = bobSession.DR.ratchetDecrypt(message);
-        assert(java.util.Arrays.equals(plaintext, decrypted));
+        assertArrayEquals(plaintext, decrypted);
     }
 
     @Test
@@ -40,6 +41,6 @@ public class DoubleRatchetTest {
         random.nextBytes(plaintext);
         byte[] ciphertext = aliceSession.DR.AES(Cipher.ENCRYPT_MODE, key, iv, plaintext);
         byte[] decrypted = aliceSession.DR.AES(Cipher.DECRYPT_MODE, key, iv, ciphertext);
-        assert(java.util.Arrays.equals(plaintext, decrypted));
+        assertArrayEquals(plaintext, decrypted);
     }
 }
