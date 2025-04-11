@@ -1,5 +1,13 @@
 package ie.dcu.secureYAC;
 
+/**
+ *
+    This class represents a message sent between users and stores the
+    required information for decryption.
+ *
+ * @author Liucija Paulina Adomaviciute
+ */
+
 public class Message {
     private byte[] header;
     private byte[] AD;
@@ -8,24 +16,36 @@ public class Message {
     private Integer currentMessageNo;
     private Integer prevMessageNo;
 
-    Message (byte[] header, byte[] AD, byte[] ciphertext) {
+    Message(byte[] header, byte[] AD, byte[] ciphertext) {
         this.header = header;
         this.AD = AD;
         this.ciphertext = ciphertext;
     }
 
-    byte[] getCiphertext() { return this.ciphertext; }
-    byte[] getKey() { return this.key; }
-    Integer getCurrentMessageNo() { return this.currentMessageNo; }
-    Integer getPrevMessageNo() { return this.prevMessageNo; }
-    Integer getHeaderADLength() { return this.header.length + this.AD.length; }
+    public byte[] getCiphertext() {
+        return this.ciphertext;
+    }
 
-    public void extractHeader() {
+    public byte[] getKey() {
+        return this.key;
+    }
+
+    public Integer getCurrentMessageNo() {
+        return this.currentMessageNo;
+    }
+
+    public Integer getPrevMessageNo() {
+        return this.prevMessageNo;
+    }
+
+    void extractHeader() {
         this.key = java.util.Arrays.copyOfRange(this.header, 0, 32);
-        this.prevMessageNo =  Util.byteArrayToBigInteger(
-            java.util.Arrays.copyOfRange(this.header, 32, 36)).intValue();
+        this.prevMessageNo = Util.byteArrayToBigInteger(java.util.Arrays.copyOfRange(
+                this.header, 32, 36))
+                .intValue();
         this.currentMessageNo = Util.byteArrayToBigInteger(
-            java.util.Arrays.copyOfRange(this.header, 36, 40)).intValue();
+                java.util.Arrays.copyOfRange(this.header, 36, 40))
+                .intValue();
     }
 
     public Boolean verify(byte[] plaintext, byte[] authKey) {

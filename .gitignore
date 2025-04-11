@@ -1,4 +1,5 @@
 src/.gradle
 src/.vscode
 src/build
+src/bin
 
