@@ -80,13 +80,13 @@ public class X3DH {
         if (identity.containsOTPK(OTPK)) {
             fourthValue = X3DH.DH(this.preKeyBundle.getPreKeyPublic(), OTPK);
             concatValues = Util.concatByteArrays(
-                    Util.concatByteArrays(fourthValue, thirdValue),
-                    Util.concatByteArrays(secondValue, firstValue));
+                    Util.concatByteArrays(secondValue, firstValue),
+                    Util.concatByteArrays(thirdValue, fourthValue));
         } else {
             fourthValue = X3DH.DH(this.ephemeralPublicKey, OTPK);
             concatValues = Util.concatByteArrays(
-                    Util.concatByteArrays(fourthValue, thirdValue),
-                    Util.concatByteArrays(firstValue, secondValue));
+                    Util.concatByteArrays(firstValue, secondValue),
+                    Util.concatByteArrays(thirdValue, fourthValue));
         }
         this.sharedSecretValue = this.HKDF(concatValues);
     }
