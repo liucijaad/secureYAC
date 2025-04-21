@@ -50,7 +50,7 @@ public class X25519 {
     private static byte[] clamping(byte[] key) {
         // Clamp bits 1, 2, 3 to 0.
         key[0] &= 0b11111000;
-        // Clamp bit 254 to 1 and bit 255 to 0.
+        // Clamp bit 255 to 1 and bit 256 to 0.
         key[31] |= 0b01000000;
         key[31] &= 0b01111111;
         return key;
