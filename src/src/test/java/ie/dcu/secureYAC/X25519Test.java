@@ -20,11 +20,11 @@ public class X25519Test {
         byte tmp;
         for (int k = 0; k < 3; k++) {
             tmp = key[0];
-            assertEquals(0, (tmp >> 8 - k) & 1);
+            assertEquals(0, (tmp >> k) & 1);
         }
         tmp = key[31];
-        assertEquals(1, (tmp >> 1) & 1);
-        assertEquals(0, tmp & 1);
+        assertEquals(1, (tmp >> 6) & 1);
+        assertEquals(0, tmp >> 7);
     }
 
     @RepeatedTest(value = 10)
