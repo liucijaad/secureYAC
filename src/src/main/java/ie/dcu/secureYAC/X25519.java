@@ -58,8 +58,7 @@ public class X25519 {
 
     /**
         @param n scalar for multiplication.
-        @param v y of base point where x = 9.
-        @return result of n * v computed using double-and-add algorithm.
+        @return result of n * BASE_POINT computed using double-and-add algorithm.
      */
     private static BigInteger doubleAndAdd(byte[] n) {
         BigInteger result = BigInteger.ZERO;
