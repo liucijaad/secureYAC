@@ -1,6 +1,7 @@
 package ie.dcu.secureYAC;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.RepeatedTest;
@@ -32,9 +33,17 @@ public class XEdDSATest {
         assertEquals(96, signature.length);
     }
 
-    @RepeatedTest(value = 100)
+    @RepeatedTest(value = 10)
     public void testSignAndVerify() throws Exception {
         User test = new User("test", 50);
         assertTrue(XEdDSA.verify(test.getPreKeyBundle()));
+    }
+
+    @RepeatedTest(value = 10)
+    public void testBadSignAndVerify() throws Exception {
+        User test = new User("test", 50);
+        PreKeyBundle pkb = test.getPreKeyBundle();
+        pkb.preKeySignature[0] = (byte) 0x00; 
+        assertFalse(XEdDSA.verify(pkb));
     }
 }

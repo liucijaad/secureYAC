@@ -8,7 +8,7 @@ public class KeyBundle {
     private byte[] identityPrivateKey;
     private byte[] preKeyPublic;
     private byte[] preKeyPrivate;
-    private byte[] preKeySignature;
+    byte[] preKeySignature;
 
     KeyBundle(String username, byte[] identityPublicKey, byte[] preKeyPublic) {
         this.username = username;
