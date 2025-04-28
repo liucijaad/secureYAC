@@ -1,7 +1,6 @@
-﻿# School of Computing &mdash; Year 4 Project
+# School of Computing &mdash; Year 4 Project
 
 ## SecureYAC
-
 |            |                              |
 |------------|------------------------------|
 |Supervisor: | Geoff Hamilton               |
@@ -21,6 +20,6 @@ SecureYAC is a messaging application with a focus on encryption and security. Th
 **Technologies Used:**
 
 <img src="res/java_logo.png" width="150px" height="auto">
-<img src="res/junit_logo.png" width="200px" height="auto">
+<img src="res/junit_logo.png" width="150px" height="auto">
 <img src="res/gradle_logo.png" width="200px" heigth="auto">
 <img src="res/bouncycastle_logo.png" width="auto" height="100px">
