@@ -61,9 +61,6 @@ public class UI extends Application {
     private String userProfileImagePath = null;
     private String appDataDirectory;
 
-    // Default profile image URL
-    private static final String DEFAULT_PROFILE_IMAGE = "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";
-
     private static final String APP_ICON_PATH = "/secureYAC_icon_256.png";
     private Image appIcon = new Image(APP_ICON_PATH);
 
@@ -157,7 +154,7 @@ public class UI extends Application {
         imageContainer.setStyle("-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 2);");
 
         // Profile picture selection
-        ImageView profileImageView = new ImageView(new Image(DEFAULT_PROFILE_IMAGE));
+        ImageView profileImageView = new ImageView(new Image(APP_ICON_PATH));
         profileImageView.setFitWidth(120);
         profileImageView.setFitHeight(120);
 
@@ -355,8 +352,7 @@ public class UI extends Application {
             // Add the peer as a contact if not already added
             Platform.runLater(() -> {
                 if (!messageHistory.containsKey(peerAddress)) {
-                    addContact(peerAddress, "Connected",
-                            "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png");
+                    addContact(peerAddress, "Connected", APP_ICON_PATH);
 
                     // New contact - add to activity tracker
                     contactActivities.put(peerAddress, new ContactActivity(peerAddress, LocalDateTime.now()));
@@ -391,8 +387,7 @@ public class UI extends Application {
 
                 // If the sender is not in our contacts, add them
                 if (!messageHistory.containsKey(sender)) {
-                    addContact(sender, msgContent,
-                            "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png");
+                    addContact(sender, msgContent, APP_ICON_PATH);
 
                     // Initialize unread counter for new contact if not current chat
                     if (currentChat == null || !currentChat.equals(sender)) {
@@ -734,7 +729,7 @@ public class UI extends Application {
         if (userProfileImagePath != null) {
             userProfileImageView.setImage(new Image("file:" + userProfileImagePath));
         } else {
-            userProfileImageView.setImage(new Image(DEFAULT_PROFILE_IMAGE));
+            userProfileImageView.setImage(new Image(APP_ICON_PATH));
         }
 
         profileImageContainer.getChildren().addAll(userProfileImageView, imageBorder);
@@ -853,7 +848,7 @@ public class UI extends Application {
         menuButton.setOnAction(e -> toggleContacts());
 
         // Contact profile image with border
-        topBarProfileImage = new ImageView(new Image(DEFAULT_PROFILE_IMAGE));
+        topBarProfileImage = new ImageView(new Image(APP_ICON_PATH));
         topBarProfileImage.setFitWidth(50);
         topBarProfileImage.setFitHeight(50);
 
@@ -1179,7 +1174,7 @@ public class UI extends Application {
         if (userProfileImagePath != null) {
             currentProfileView.setImage(new Image("file:" + userProfileImagePath));
         } else {
-            currentProfileView.setImage(new Image(DEFAULT_PROFILE_IMAGE));
+            currentProfileView.setImage(new Image(APP_ICON_PATH));
         }
 
         imageContainer.getChildren().addAll(currentProfileView, imageBorder);
