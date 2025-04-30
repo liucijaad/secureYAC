@@ -64,6 +64,10 @@ public class UI extends Application {
     // Default profile image URL
     private static final String DEFAULT_PROFILE_IMAGE = "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";
 
+    private static final String APP_ICON_PATH = "/secureYAC_icon_256.png";
+    private Image appIcon = new Image(APP_ICON_PATH);
+
+    private static final String APP_LOGO_PATH = "/secureYAC_logo.png";
 
     // Map of peer addresses to sockets to track active connections
     private final HashMap<String, PeerThread> activePeers = new HashMap<>();
@@ -83,6 +87,8 @@ public class UI extends Application {
         fileTransferManager.setOnTransferProgress(this::handleTransferProgress);
 
         setupAppDataDirectory();
+
+        primaryStage.getIcons().add(appIcon);
 
         showLoginDialog(primaryStage);
     }
@@ -111,6 +117,7 @@ public class UI extends Application {
         dialogStage.initOwner(primaryStage);
         dialogStage.setTitle("Welcome to SecureYAC");
         dialogStage.setResizable(false);
+        dialogStage.getIcons().add(appIcon);
 
         // Create the main container
         VBox mainContainer = new VBox(20);
@@ -118,11 +125,32 @@ public class UI extends Application {
         mainContainer.setAlignment(Pos.CENTER);
         mainContainer.setStyle("-fx-background-color: linear-gradient(to bottom, #f5f7fa, #e4e7eb);");
 
-        Label appTitle = new Label("SecureYAC");
-        appTitle.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #3498db;");
+        // Title section with logo
+        VBox titleBox = new VBox(10);
+        titleBox.setAlignment(Pos.CENTER);
 
-        Label subTitle = new Label("The Most Secure Chat");
-        subTitle.setStyle("-fx-font-size: 14px; -fx-text-fill: #7f8c8d; -fx-padding: 0 0 20 0;");
+        try {
+            // Try to load the logo image
+            ImageView logoImageView = new ImageView(new Image(APP_LOGO_PATH));
+            logoImageView.setFitWidth(180); // Adjust size as needed
+            logoImageView.setPreserveRatio(true);
+
+            Label subTitle = new Label("The Most Secure Chat");
+            subTitle.setStyle("-fx-font-size: 14px; -fx-text-fill: #7f8c8d; -fx-padding: 0 0 20 0;");
+
+            titleBox.getChildren().addAll(logoImageView, subTitle);
+        } catch (Exception e) {
+            // Fallback to text if image loading fails
+            System.err.println("Could not load application logo: " + e.getMessage());
+
+            Label appTitle = new Label("SecureYAC");
+            appTitle.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #3498db;");
+
+            Label subTitle = new Label("The Most Secure Chat");
+            subTitle.setStyle("-fx-font-size: 14px; -fx-text-fill: #7f8c8d; -fx-padding: 0 0 20 0;");
+
+            titleBox.getChildren().addAll(appTitle, subTitle);
+        }
 
         // Profile picture container
         StackPane imageContainer = new StackPane();
@@ -217,11 +245,6 @@ public class UI extends Application {
                                 "-fx-cursor: hand;"
                 )
         );
-
-        // Add everything to the main container
-        VBox titleBox = new VBox(5);
-        titleBox.setAlignment(Pos.CENTER);
-        titleBox.getChildren().addAll(appTitle, subTitle);
 
         mainContainer.getChildren().addAll(
                 titleBox,
