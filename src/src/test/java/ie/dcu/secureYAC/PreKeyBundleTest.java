@@ -1,24 +1,41 @@
 package ie.dcu.secureYAC;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
+import org.junit.jupiter.api.Test;
+
 import java.io.File;
 
-import org.junit.jupiter.api.RepeatedTest;
-
 public class PreKeyBundleTest {
-    
-    @RepeatedTest(value = 10)
+    @Test
     public void testExport() throws Exception {
-        IdentityKeyBundle identity = new IdentityKeyBundle(
-        X25519.generatePrivateKey(), X25519.generatePrivateKey());
-        PreKeyBundle prekey = new PreKeyBundle(identity.getIdentityPublicKey(),
-        identity.getPreKeyPublic(), identity.getPreKeySignature(), identity.useOTPK());
-        for(int i = 10; i !=0; i--) {
+        User test = new User("test", 50);
+        PreKeyBundle prekey = test.getPreKeyBundle();
+        prekey.export();
+        for (File f : new File(".").listFiles()) {
+            if (f.getName().endsWith(".pkb")) {
+                f.delete();
+                return;
+            }
+        }
+        fail(".pkb file not found.");
+    }
+
+    @Test
+    public void testMultiExport() throws Exception {
+        User test = new User("test", 50);
+        PreKeyBundle prekey = test.getPreKeyBundle();
+        for (int i = 10; i != 0; i--) {
             prekey.export();
         }
-        for(File f : new File(".").listFiles()) {
-            if(f.getName().endsWith(".pkb")) {
+        int counter = 0;
+        for (File f : new File(".").listFiles()) {
+            if (f.getName().endsWith(".pkb")) {
+                counter += 1;
                 f.delete();
             }
         }
+        assertEquals(10, counter);
     }
 }

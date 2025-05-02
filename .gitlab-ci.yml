@@ -2,20 +2,20 @@ stages:
   - build
   - test
 
+image: gradle:8.10
+
 before_script:
   - cd src/
   
 build-job:
   stage: build
-  image: gradle:8.10
   script:
     - gradle --build-cache clean build
 
 unit-test-job:
   stage: test
-  image: gradle:8.10
   script:
-    - gradle check
+    - gradle test
 
 
 
