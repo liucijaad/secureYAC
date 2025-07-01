@@ -26,5 +26,5 @@ SecureYAC is a messaging application with a focus on encryption and security. Th
 
 **Personal Contribution**
 
-For this project, I have implemented Elliptic Curve Cryptography (ECC) almost from scratch. I have implemented X25519 Elliptic curve key generation algorithm, Extended Triple Diffie-Hellman (X3DH) and Double Ratchet algorithms based on Signal's specification (see more [here](./docs/technical_manual.pdf)). I also implemented XEdDSA signature scheme using BouncyCastle's Java cryptographic library only for hashing. All unit tests were also written by me. For more detailed information and specification, refer to [technical manual](./docs/technical_manual.pdf).
+For this project, I implemented Elliptic Curve Cryptography (ECC) without using any cryptographic libraries for the main encryption/decryption algorithms. I implemented X25519 Elliptic Curve key generation algorithm, Extended Triple Diffie-Hellman (X3DH) and Double Ratchet algorithms based on Signal's specification (see more [here](https://signal.org/docs/). I implemented XEdDSA signature scheme. BouncyCastle cyrptographic library was only used for some hashing algorithms that I did not implement from scratch due to time contraints. All unit tests were written by me. For more detailed information and specification, refer to [technical manual](./docs/technical_manual.pdf).
 
