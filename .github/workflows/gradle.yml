@@ -1,0 +1,43 @@
+name: Gradle Build and Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    container:
+      image: gradle:8.10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Change to src directory
+        run: cd src
+
+      - name: Build with Gradle
+        working-directory: src
+        run: gradle --build-cache clean build
+
+  test:
+    runs-on: ubuntu-latest
+
+    container:
+      image: gradle:8.10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Change to src directory
+        run: cd src
+
+      - name: Run Unit Tests
+        working-directory: src
+        run: gradle test
+
